@@ -22,8 +22,6 @@ Allows reading, manipulating, and writing user crontabs from [node.js](http://no
             beSurprised  = '/usr/bin/env echo "get presents"',
             startServer  = '/usr/bin/env echo "starting some service..."';
         
-        //console.log(tab.lines);
-        
         tab.removeAll(checkEmail);
         tab.removeAll(haveFun);
         tab.removeAll(sleepLate);
