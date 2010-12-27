@@ -7,7 +7,7 @@ Allows reading, manipulating, and writing user crontabs from [node.js](http://no
     $ npm install crontab
 
 ## Usage
-    var CronTab = require('./node-crontab');
+    var CronTab = require('crontab');
     
     var tab = new CronTab();
     tab.on('loaded', tabsLoaded);
