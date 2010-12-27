@@ -1,0 +1,10 @@
+{
+  'name': 'crontab',
+  'description': 'node.js API for loading, manipulating, and saving user's system crons',
+  'version': '0.1.0',
+  'author': 'Blagovest Dachev <blago@dachev.com>',
+  'keywords': ['cron', 'schedule', 'system', 'run', 'process'],
+  'main': './lib/crontab',
+  'dependencies': {},
+  'engines': { 'node': '>= 0.2.5' }
+}
