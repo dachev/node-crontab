@@ -1,6 +1,6 @@
 {
   'name': 'crontab',
-  'description': 'node.js API for loading, manipulating, and saving user\'s system crons',
+  'description': 'A module for reading, manipulating, and writing user crontabs from node.js',
   'version': '0.1.0',
   'author': 'Blagovest Dachev <blago@dachev.com>',
   'keywords': ['cron', 'schedule', 'system', 'run', 'process'],
