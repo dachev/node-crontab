@@ -13,6 +13,71 @@ The latest revision of node-crontab is compatible with node --version:
 
     >= 0.2.5
 
+## Usage
+    var CronTab = require('./node-crontab');
+    
+    var tab = new CronTab();
+    tab.on('loaded', tabsLoaded);
+    tab.on('saved',  tabsSaved);
+    tab.on('error',  tabsError);
+    
+    function tabsLoaded() {
+        var checkEmail   = '/usr/bin/env echo "check email"',
+            haveFun      = '/usr/bin/env echo "hack node.js"',
+            sleepLate    = '/usr/bin/env echo "wake up"',
+            takeVacation = '/usr/bin/env echo "go to Bulgaria"',
+            beSurprised  = '/usr/bin/env echo "get presents"',
+            startServer  = '/usr/bin/env echo "starting some service..."';
+        
+        //console.log(tab.lines);
+        
+        tab.removeAll(checkEmail);
+        tab.removeAll(haveFun);
+        tab.removeAll(sleepLate);
+        tab.removeAll(takeVacation);
+        tab.removeAll(beSurprised);
+        tab.removeAll(startServer);
+        
+        var everyBusinessHour = tab.create(checkEmail);
+        everyBusinessHour.minute().on(0);
+        everyBusinessHour.hour().during(8, 17);
+        everyBusinessHour.dow().during('mon', 'fri');
+        
+        var everyWeekDayNight = tab.create(haveFun);
+        everyWeekDayNight.hour().during(19, 0);
+        everyWeekDayNight.hour().during(0, 3);
+        everyWeekDayNight.dow().during('mon', 'fri');
+        
+        var everyWeekEndMorning = tab.create(sleepLate);
+        everyWeekEndMorning.minute().on(30);
+        everyWeekEndMorning.hour().on(11);
+        everyWeekEndMorning.dow().during('sat', 'sun');
+        
+        var everySummer = tab.create(takeVacation);
+        everySummer.month().during('jun', 'sep');
+        
+        var everyChristmas = tab.create(beSurprised);
+        everyChristmas.minute().on(30);
+        everyChristmas.hour().on(9);
+        everyChristmas.dom().on(24);
+        everyChristmas.month().on('dec');
+        
+        var item = tab.create(startServer);
+        item.everyReboot();
+        
+        tab.save();
+    }
+    
+    function tabsSaved() {
+        console.log('saved');
+    }
+    
+    function tabsError(err) {
+        console.log(err);
+        console.log(tab.render());
+    }
+
+
 ## License
 Copyright 2010, Blagovest Dachev.
 
