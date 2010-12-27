@@ -4,14 +4,7 @@
 Allows reading, manipulating, and writing user crontabs from [node.js](http://nodejs.org).
 
 ## Installation
-
     $ npm install crontab
-
-## Node Compatibility
-    
-The latest revision of node-crontab is compatible with node --version:
-
-    >= 0.2.5
 
 ## Usage
     var CronTab = require('./node-crontab');
@@ -77,6 +70,11 @@ The latest revision of node-crontab is compatible with node --version:
         console.log(tab.render());
     }
 
+## Node Compatibility
+    
+The latest revision of node-crontab is compatible with node --version:
+
+    >= 0.2.5
 
 ## License
 Copyright 2010, Blagovest Dachev.
