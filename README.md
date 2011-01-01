@@ -7,66 +7,26 @@ Allows reading, manipulating, and writing user crontabs from [node.js](http://no
     $ npm install crontab
 
 ## Usage
-    var CronTab = require('crontab');
-    
-    var tab = new CronTab();
-    tab.on('loaded', tabsLoaded);
-    tab.on('saved',  tabsSaved);
-    tab.on('error',  tabsError);
-    
-    function tabsLoaded() {
-        var checkEmail   = '/usr/bin/env echo "check email"',
-            haveFun      = '/usr/bin/env echo "hack node.js"',
-            sleepLate    = '/usr/bin/env echo "wake up"',
-            takeVacation = '/usr/bin/env echo "go to Bulgaria"',
-            beSurprised  = '/usr/bin/env echo "get presents"',
-            startServer  = '/usr/bin/env echo "starting some service..."';
+    require('crontab').load(cronLoaded);
+
+    function cronLoaded(err, tabs) {
+        if (err) { console.log(err); process.exit(1); }
         
-        tab.removeAll(checkEmail);
-        tab.removeAll(haveFun);
-        tab.removeAll(sleepLate);
-        tab.removeAll(takeVacation);
-        tab.removeAll(beSurprised);
-        tab.removeAll(startServer);
+        var command = '/usr/bin/env echo "starting some service..."';
+        tabs.removeAll(command);
         
-        var everyBusinessHour = tab.create(checkEmail);
-        everyBusinessHour.minute().on(0);
-        everyBusinessHour.hour().during(8, 17);
-        everyBusinessHour.dow().during('mon', 'fri');
-        
-        var everyWeekDayNight = tab.create(haveFun);
-        everyWeekDayNight.hour().during(19, 0);
-        everyWeekDayNight.hour().during(0, 3);
-        everyWeekDayNight.dow().during('mon', 'fri');
-        
-        var everyWeekEndMorning = tab.create(sleepLate);
-        everyWeekEndMorning.minute().on(30);
-        everyWeekEndMorning.hour().on(11);
-        everyWeekEndMorning.dow().during('sat', 'sun');
-        
-        var everySummer = tab.create(takeVacation);
-        everySummer.month().during('jun', 'sep');
-        
-        var everyChristmas = tab.create(beSurprised);
-        everyChristmas.minute().on(30);
-        everyChristmas.hour().on(9);
-        everyChristmas.dom().on(24);
-        everyChristmas.month().on('dec');
-        
-        var item = tab.create(startServer);
+        var item = tabs.create(command);
         item.everyReboot();
         
-        tab.save();
+        tabs.save(cronSaved);
     }
     
-    function tabsSaved() {
+    function cronSaved(err, tabs) {
+        if (err) { console.log(err); process.exit(1); }
+        
         console.log('saved');
     }
-    
-    function tabsError(err) {
-        console.log(err);
-        console.log(tab.render());
-    }
+
 
 ## Node Compatibility
     
