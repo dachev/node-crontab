@@ -5,7 +5,10 @@ install:
 uninstall:
 	rm -fr ~/.node_libraries/crontab
 
-docs: uninstall install
+test:
+	vows test/runner.js --spec
+
+docs:
 	dox --ribbon "http://github.com/dachev/node-crontab" \
 		--title "Crontab" \
 		--desc "A module for reading, manipulating, and writing user cron \
@@ -14,4 +17,4 @@ docs: uninstall install
 		installation guide."\
 		lib/*.js > index.html
 
-.PHONY: install uninstall docs
+.PHONY: install uninstall test docs
