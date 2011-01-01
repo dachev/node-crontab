@@ -27,6 +27,8 @@ Allows reading, manipulating, and writing user crontabs from [node.js](http://no
         console.log('saved');
     }
 
+## Documentation
+API [reference](http://dachev.github.com/node-crontab).
 
 ## Node Compatibility
     
