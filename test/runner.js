@@ -2,7 +2,7 @@
 
 var Vows    = require('vows'),
     Assert  = require('assert'),
-    CronTab = require('../lib/crontab');
+    CronTab = require('../lib/index');
 
 Vows.describe('crontab').addBatch({
     'io': {
