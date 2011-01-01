@@ -9,7 +9,7 @@ docs: uninstall install
 	dox --ribbon "http://github.com/dachev/node-crontab" \
 		--title "Crontab" \
 		--desc "A module for reading, manipulating, and writing user cron jobs \
-		from [node](http://www.nodejs.org). Check out the [Github Repo]\
+		from [node](http://www.nodejs.org). Check out the [github]\
 		(http://github.com/dachev/node-crontab) for the source and installation guide."\
 		lib/*.js > index.html
 
