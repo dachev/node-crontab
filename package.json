@@ -1,10 +1,10 @@
 {
   'name': 'crontab',
   'description': 'A module for reading, manipulating, and writing user crontabs from node.js',
-  'version': '0.2.0',
+  'version': '0.2.1',
   'author': 'Blagovest Dachev <blago@dachev.com>',
   'keywords': ['cron', 'schedule', 'system', 'run', 'process'],
-  'main': './lib/crontab',
+  'main': './lib/index',
   'dependencies': {},
   'engines': { 'node': '>= 0.2.5' }
 }
