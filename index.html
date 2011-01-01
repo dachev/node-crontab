@@ -1,0 +1,1256 @@
+<a href="http://github.com/dachev/node-crontab"><img alt="Fork me on GitHub" id="ribbon" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a><html>
+	<head>
+		<title>Crontab</title>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+		<style>body {
+    margin: 0;
+    padding: 0;
+    font: 14px/1.5 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
+    color: #252519;
+}
+a {
+    color: #252519;
+}
+a:hover {
+    text-decoration: underline;
+    color: #19469D;
+}
+p {
+    margin: 12px 0;
+}
+h1, h2, h3 {
+    margin: 0;
+    padding: 0;
+}
+table#source {
+    width: 100%;
+    border-collapse: collapse;
+}
+table#source td:first-child {
+    padding: 30px 40px 30px 40px;
+    vertical-align: top;
+}
+table#source td:first-child,
+table#source td:first-child pre {
+    width: 450px;
+}
+table#source td:last-child {
+    padding: 30px 0 30px 40px;
+    border-left: 1px solid #E5E5EE;
+    background: #F5F5FF;
+}
+table#source tr {
+    border-bottom: 1px solid #E5E5EE;
+}
+table#source tr.filename {
+    padding-top: 40px;
+    border-top: 1px solid #E5E5EE;
+}
+table#source tr.filename td:first-child {
+    text-transform: capitalize;
+}
+table#source tr.filename td:last-child {
+    font-size: 12px;
+}
+table#source tr.filename h2 {
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+}
+table#source tr.code h1,
+table#source tr.code h2,
+table#source tr.code h3 {
+    margin-top: 30px;
+    font-family: "Lucida Grande", "Helvetica Nueue", Arial, sans-serif;
+    font-size: 18px;
+}
+table#source tr.code h2 {
+    font-size: 16px;
+}
+table#source tr.code h3 {
+    font-size: 14px;
+}
+table#source tr.code ul {
+    margin: 15px 0 15px 35px;
+    padding: 0;
+}
+table#source tr.code ul li {
+    margin: 0;
+    padding: 1px 0;
+}
+table#source tr.code ul li p {
+    margin: 0;
+    padding: 0;
+}
+table#source tr.code td:first-child pre {
+    padding: 20px;
+}
+#ribbon {
+    position: fixed;
+    top: 0;
+    right: 0;
+}
+code .string { color: #219161; }
+code .regexp { color: #219161; }
+code .keyword { color: #954121; }
+code .number { color: #19469D; }
+code .comment { color: #bbb; }
+code .this { color: #19469D; }</style>
+		<script>
+			$(function(){
+				$('tr.code').hide();
+				$('tr.filename').toggle(function(){
+					$(this).nextUntil('.filename').fadeIn();
+				}, function(){
+					$(this).nextUntil('.filename').fadeOut();
+				});
+			});
+		</script>
+	</head>
+	<body>
+<table id="source"><tbody><tr><td><h1>Crontab</h1><p>A module for reading, manipulating, and writing user cron jobs 	from <a href="http://www.nodejs.org">node</a>. Check out the <a href="http://github.com/dachev/node-crontab">Github Repo</a> for the source and installation guide.</p></td><td></td></tr><tr class="filename"><td><h2 id="lib/index.js"><a href="#">index</a></h2></td><td>lib/index.js</td></tr><tr class="code">
+<td class="docs">
+<p>Constants
+ </p>
+</td>
+<td class="code">
+<pre><code><span class="keyword">const</span> <span class="class">COMMAND</span>  = <span class="string">'/usr/bin/crontab'</span>;
+<span class="keyword">const</span> <span class="class">ITEMREX</span>  = <span class="regexp">/^\s*([^@#\s]+)\s+([^@#\s]+)\s+([^@#\s]+)\s+([^@#\s]+)\s+([^@#\s]+)\s+([^#\n]*)(\s+#\s*([^\n]*)|$)/</span>;
+<span class="keyword">const</span> <span class="class">SPECREX</span>  = <span class="regexp">/@(\w+)\s([^#\n]*)(\s+#\s*([^\n]*)|$)/</span>;
+<span class="keyword">const</span> <span class="class">SPECIALS</span> = {
+	<span class="string">'reboot'</span>   : <span class="string">'@reboot'</span>,
+	<span class="string">'hourly'</span>   : <span class="string">'0 * * * *'</span>,
+	<span class="string">'daily'</span>    : <span class="string">'0 0 * * *'</span>,
+	<span class="string">'weekly'</span>   : <span class="string">'0 0 * * 0'</span>,
+	<span class="string">'monthly'</span>  : <span class="string">'0 0 1 * *'</span>,
+	<span class="string">'yearly'</span>   : <span class="string">'0 0 1 1 *'</span>,
+	<span class="string">'annually'</span> : <span class="string">'0 0 1 1 *'</span>,
+	<span class="string">'midnight'</span> : <span class="string">'0 0 * * *'</span>
+};
+
+<span class="keyword">const</span> <span class="class">MONTH_ENUM</span> = [<span class="string">'jan'</span>,<span class="string">'feb'</span>,<span class="string">'mar'</span>,<span class="string">'apr'</span>,<span class="string">'may'</span>,<span class="string">'jun'</span>,<span class="string">'jul'</span>,<span class="string">'aug'</span>,<span class="string">'sep'</span>,<span class="string">'oct'</span>,<span class="string">'nov'</span>,<span class="string">'dec'</span>];
+<span class="keyword">const</span> <span class="class">WEEK_ENUM</span>  = [<span class="string">'sun'</span>,<span class="string">'mon'</span>,<span class="string">'tue'</span>,<span class="string">'wed'</span>,<span class="string">'thu'</span>,<span class="string">'fri'</span>,<span class="string">'sat'</span>,<span class="string">'sun'</span>];
+<span class="keyword">const</span> <span class="class">SINFO</span> = [
+	{ <span class="string">'name'</span> : <span class="string">'Minute'</span>,       <span class="string">'max'</span> : <span class="number integer">59</span>, <span class="string">'min'</span> : <span class="number integer">0</span> },
+	{ <span class="string">'name'</span> : <span class="string">'Hours'</span>,        <span class="string">'max'</span> : <span class="number integer">23</span>, <span class="string">'min'</span> : <span class="number integer">0</span> },
+	{ <span class="string">'name'</span> : <span class="string">'Day of Month'</span>, <span class="string">'max'</span> : <span class="number integer">31</span>, <span class="string">'min'</span> : <span class="number integer">1</span> },
+	{ <span class="string">'name'</span> : <span class="string">'Month'</span>,        <span class="string">'max'</span> : <span class="number integer">12</span>, <span class="string">'min'</span> : <span class="number integer">1</span>, <span class="string">'enum'</span> : <span class="class">MONTH_ENUM</span> },
+	{ <span class="string">'name'</span> : <span class="string">'Day of Week'</span>,  <span class="string">'max'</span> : <span class="number integer">7</span>,  <span class="string">'min'</span> : <span class="number integer">0</span>, <span class="string">'enum'</span> : <span class="class">WEEK_ENUM</span> },
+];</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<ul><li><strong>class</strong>: <em>CronTab</em></li></ul>
+
+<p>A JavaScript representation of a user crontab. Each tab has zero or more cron jobs coresponding
+to the individual lines in the cron sytax.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab('bob', function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    console.log("bob's tab: " + tab.render());
+});
+
+new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    console.log("current user's tab: " + tab.render());
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>String</em>  <strong>username</strong></p></li><li><p><strong>param</strong>: <em>Function</em>  <strong>callback</strong></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="keyword">function</span> <span class="class">CronTab</span>(<span class="variable">u</span>, <span class="variable">cb</span>) {
+    <span class="keyword">var</span> <span class="variable">self</span>   = <span class="this">this</span>;
+        <span class="variable">user</span>   = <span class="variable">u</span> || <span class="string">''</span>,
+        <span class="variable">root</span>   = (<span class="variable">process</span>.<span class="variable">getuid</span>() == <span class="number integer">0</span>),
+        <span class="variable">backup</span> = {<span class="variable">lines</span>:[], <span class="variable">jobs</span>:[]},
+        <span class="variable">lines</span>  = [],
+        <span class="variable">jobs</span>   = [];
+    
+    <span class="variable">load</span>(<span class="variable">cb</span>);</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Provides access to the jobs collection.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.getJobs();
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].render());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>Array[CronJob]</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">getJobs</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="variable">jobs</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Writes the crontab to the system. Saves all information.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    tab.removeAll('ls -l /');
+
+    tab.save(function(err, tab) {
+        if (err) { console.log(err); process.exit(1); }
+
+        console.log('saved');
+    });
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Function</em>  <strong>callback</strong></p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">save</span> = <span class="keyword">function</span>(<span class="variable">cb</span>) {
+        <span class="keyword">var</span> <span class="variable">stdout</span> = <span class="string">''</span>,
+            <span class="variable">stderr</span> = <span class="string">''</span>,
+            <span class="variable">args</span>   = <span class="variable">makeChildArgs</span>(<span class="string">'save'</span>),
+            <span class="variable">child</span>  = <span class="class">Spawn</span>(<span class="class">COMMAND</span>, <span class="variable">args</span>);
+        
+        <span class="variable">child</span>.<span class="variable">stdout</span>.<span class="variable">addListener</span>(<span class="string">'data'</span>, <span class="keyword">function</span>(<span class="variable">chunk</span>) {
+            <span class="variable">stdout</span> += <span class="variable">chunk</span>;
+        });
+        <span class="variable">child</span>.<span class="variable">stderr</span>.<span class="variable">addListener</span>(<span class="string">'data'</span>, <span class="keyword">function</span>(<span class="variable">chunk</span>) {
+            <span class="variable">stderr</span> += <span class="variable">chunk</span>;
+        });
+        <span class="variable">child</span>.<span class="variable">on</span>(<span class="string">'exit'</span>, <span class="keyword">function</span> (<span class="variable">code</span>) {
+            <span class="keyword">if</span> (<span class="variable">code</span> == <span class="number integer">0</span>) {
+                <span class="variable">cb</span>(<span class="keyword">null</span>, <span class="variable">self</span>);
+            }
+            <span class="keyword">else</span> {
+                <span class="variable">cb</span>({<span class="variable">message</span>:<span class="variable">stderr</span>}, <span class="variable">self</span>);
+            }
+        });
+        
+        <span class="variable">child</span>.<span class="variable">stdin</span>.<span class="variable">write</span>(<span class="this">this</span>.<span class="variable">render</span>());
+        <span class="variable">child</span>.<span class="variable">stdin</span>.<span class="variable">end</span>();
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Renders the object to a string as it would be written to the system.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    console.log(tab.render());
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>String</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">render</span> = <span class="keyword">function</span>() {
+        <span class="keyword">var</span> <span class="variable">tokens</span> = [];
+        
+        <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">lines</span>.<span class="variable">length</span>; <span class="variable">i</span>++) {
+            <span class="keyword">var</span> <span class="variable">job</span> = <span class="variable">lines</span>[<span class="variable">i</span>];
+            
+            <span class="keyword">if</span> (<span class="variable">job</span>.<span class="variable">isValid</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; !<span class="variable">job</span>.<span class="variable">isValid</span>()) {
+                <span class="variable">tokens</span>.<span class="variable">push</span>(<span class="string">'# '</span> + <span class="variable">job</span>.<span class="variable">toString</span>());
+                <span class="keyword">continue</span>;
+            }
+            
+            <span class="variable">tokens</span>.<span class="variable">push</span>(<span class="variable">job</span>.<span class="variable">toString</span>());
+        }
+        
+        <span class="keyword">return</span> <span class="variable">tokens</span>.<span class="variable">join</span>(<span class="string">'\n'</span>).<span class="variable">trim</span>() + <span class="string">'\n'</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Creates a new job with the specified command, comment and date.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var future = Date.parse('2010/7/11');
+
+    tab.create('ls -l /');
+    tab.create('ls -l /', 'just a silly example');
+    tab.create('ls -l /', 'just a silly example', future);
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>String</em>  <strong>command</strong></p></li><li><p><strong>param</strong>: <em>String</em>  <strong>[comment]</strong></p></li><li><p><strong>param</strong>: <em>Date</em>  <strong>[date]</strong></p></li><li><p><strong>return</strong>: <em>CronJob | null</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">create</span> = <span class="keyword">function</span>(<span class="variable">command</span>) {
+        <span class="keyword">var</span> <span class="variable">args</span>    = <span class="class">Array</span>.<span class="variable">prototype</span>.<span class="variable">slice</span>.<span class="variable">call</span>(<span class="variable">arguments</span>),
+            <span class="variable">types</span>   = <span class="variable">args</span>.<span class="variable">map</span>(<span class="keyword">function</span>(<span class="variable">arg</span>) { <span class="keyword">return</span> <span class="keyword">typeof</span> <span class="variable">arg</span>; }),
+            <span class="variable">comment</span> = (<span class="variable">types</span>[<span class="number integer">1</span>] == <span class="string">'string'</span>) ? <span class="variable">args</span>[<span class="number integer">1</span>] : <span class="keyword">null</span>,
+            <span class="variable">job</span>     = <span class="variable">makeJob</span>(<span class="keyword">null</span>, <span class="variable">command</span>, <span class="variable">comment</span>);
+        
+        <span class="keyword">if</span> (<span class="variable">job</span> == <span class="keyword">null</span>) { <span class="keyword">return</span> <span class="variable">job</span>; }
+        
+        <span class="variable">jobs</span>.<span class="variable">push</span>(<span class="variable">job</span>);
+        <span class="variable">lines</span>.<span class="variable">push</span>(<span class="variable">job</span>);
+    
+        <span class="keyword">var</span> <span class="variable">date</span> = (<span class="variable">args</span>[<span class="number integer">1</span>] <span class="variable">instanceof</span> <span class="class">Date</span>) ?
+            <span class="variable">args</span>[<span class="number integer">1</span>] : (<span class="variable">args</span>[<span class="number integer">2</span>] <span class="variable">instanceof</span> <span class="class">Date</span>) ?
+                <span class="variable">args</span>[<span class="number integer">2</span>] :
+                <span class="keyword">null</span>;
+        
+        <span class="keyword">if</span> (<span class="variable">date</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">date</span> <span class="variable">instanceof</span> <span class="class">Date</span>) {
+            <span class="variable">job</span>.<span class="variable">minute</span>().<span class="variable">on</span>(<span class="variable">date</span>.<span class="variable">getMinutes</span>());
+            <span class="variable">job</span>.<span class="variable">hour</span>().<span class="variable">on</span>(<span class="variable">date</span>.<span class="variable">getHours</span>());
+            <span class="variable">job</span>.<span class="variable">dom</span>().<span class="variable">on</span>(<span class="variable">date</span>.<span class="variable">getDate</span>());
+            <span class="variable">job</span>.<span class="variable">month</span>().<span class="variable">on</span>(<span class="variable">date</span>.<span class="variable">getMonth</span>()+<span class="number integer">1</span>);
+        }
+        
+        <span class="keyword">return</span> <span class="variable">job</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Returns a list of jobs using the specified command.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].render());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>String</em>  <strong>command</strong></p></li><li><p><strong>return</strong>: <em>Array[CronJob]</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">findCommand</span> = <span class="keyword">function</span>(<span class="variable">command</span>) {
+        <span class="keyword">var</span> <span class="variable">results</span> = [];
+        
+        <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">jobs</span>.<span class="variable">length</span>; <span class="variable">i</span>++) {
+            <span class="keyword">var</span> <span class="variable">job</span> = <span class="variable">jobs</span>[<span class="variable">i</span>];
+            
+            <span class="keyword">if</span> (<span class="variable">job</span>.<span class="variable">getCommand</span>().<span class="variable">match</span>(<span class="variable">command</span>)) {
+                <span class="variable">results</span>.<span class="variable">push</span>(<span class="variable">job</span>);
+            }
+        }
+        
+        <span class="keyword">return</span> <span class="variable">results</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Removes all jobs using the specified command.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    tab.removeAll('ls -l /');
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>String</em>  <strong>command</strong></p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">removeAll</span> = <span class="keyword">function</span>(<span class="variable">command</span>) {
+        <span class="keyword">var</span> <span class="variable">results</span> = <span class="this">this</span>.<span class="variable">findCommand</span>(<span class="variable">command</span>);
+        
+        <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">results</span>.<span class="variable">length</span>; <span class="variable">i</span>++) {
+            <span class="keyword">var</span> <span class="variable">result</span> = <span class="variable">results</span>[<span class="variable">i</span>];
+            <span class="this">this</span>.<span class="variable">remove</span>(<span class="variable">result</span>);
+        }
+        
+        <span class="variable">truncateLines</span>();
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Removes the specified job from the crontab.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        tab.remove(jobs[i]);
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>CronJob</em>  <strong>job</strong></p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">remove</span> = <span class="keyword">function</span>(<span class="variable">job</span>) {
+        <span class="keyword">var</span> <span class="variable">oldJobs</span>  = <span class="variable">jobs</span>;
+        <span class="keyword">var</span> <span class="variable">oldLines</span> = <span class="variable">lines</span>;
+        
+        <span class="variable">jobs</span>  = [];
+        <span class="variable">lines</span> = [];
+        
+        <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">oldJobs</span>.<span class="variable">length</span>; <span class="variable">i</span>++) {
+            <span class="keyword">var</span> <span class="variable">oldJob</span> = <span class="variable">oldJobs</span>[<span class="variable">i</span>];
+            
+            <span class="keyword">if</span> (<span class="variable">oldJob</span> != <span class="variable">job</span>) {
+                <span class="variable">jobs</span>.<span class="variable">push</span>(<span class="variable">oldJob</span>);
+            }
+        }
+        <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">oldLines</span>.<span class="variable">length</span>; <span class="variable">i</span>++) {
+            <span class="keyword">var</span> <span class="variable">oldLine</span> = <span class="variable">oldLines</span>[<span class="variable">i</span>];
+            
+            <span class="keyword">if</span> (<span class="variable">oldLine</span> != <span class="variable">job</span>) {
+                <span class="variable">lines</span>.<span class="variable">push</span>(<span class="variable">oldLine</span>);
+            }
+        }
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Restores this crontab to its original state.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    tab.removeAll('ls -l /');
+    tab.reset();
+});
+ </code></pre>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">reset</span> = <span class="keyword">function</span>() {
+        <span class="variable">lines</span> = <span class="variable">backup</span>.<span class="variable">lines</span>;
+        <span class="variable">jobs</span>  = <span class="variable">backup</span>.<span class="variable">jobs</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<ul><li><strong>class</strong>: <em>CronJob</em></li></ul>
+
+<p>A JavaScript representation of a cron job. Each job has exactly 5 time slots as per cron sytax:
+<em>minute</em>, <em>hour</em>, <em>day-of-the-month</em>, <em>month</em>, <em>day-of-the-week</em>.</p>
+
+<h2>Examples</h2>
+
+<pre><code>var job1 = new CronJob('* * * * * ls -l / #comment');
+var job2 = new CronJob(null, 'ls -l /', 'comment');</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>String | null</em>  <strong>line</strong></p></li><li><p><strong>param</strong>: <em>String</em>  <strong>[command]</strong></p></li><li><p><strong>param</strong>: <em>String</em>  <strong>[meta]</strong></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="keyword">function</span> <span class="class">CronJob</span>(<span class="variable">line</span>, <span class="variable">c</span>, <span class="variable">m</span>) {
+    <span class="keyword">var</span> <span class="variable">self</span>    = <span class="this">this</span>,
+        <span class="variable">command</span> = <span class="keyword">null</span>,
+        <span class="variable">meta</span>    = <span class="variable">m</span> || <span class="string">''</span>,
+        <span class="variable">valid</span>   = <span class="variable">false</span>,
+        <span class="variable">slots</span>   = [],
+        <span class="variable">special</span> = <span class="variable">false</span>;</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Returns the command object associated with this cron job.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].getCommand());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>CronCommand</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">getCommand</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="variable">command</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Returns true if this cron job is valid.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].isValid());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>Boolean</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">isValid</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="variable">valid</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Renders the object to a string as it would be written to the system.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].render());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>String</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">render</span> = <span class="keyword">function</span>() {
+        <span class="keyword">var</span> <span class="variable">time</span> = <span class="string">''</span>;
+        
+        <span class="keyword">if</span> (<span class="variable">special</span>) {
+            <span class="variable">time</span> = <span class="variable">special</span>;
+        }
+        <span class="keyword">else</span> {
+            <span class="keyword">var</span> <span class="variable">tokens</span> = [];
+            
+            <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="number integer">5</span>; <span class="variable">i</span>++) {
+                <span class="variable">tokens</span>.<span class="variable">push</span>(<span class="variable">slots</span>[<span class="variable">i</span>].<span class="variable">toString</span>());
+            }
+            
+            <span class="variable">time</span> = <span class="variable">tokens</span>.<span class="variable">join</span>(<span class="string">' '</span>);
+        }
+        
+        <span class="keyword">var</span> <span class="variable">keys</span> = <span class="variable">getKeys</span>.<span class="variable">call</span>(<span class="class">SPECIALS</span>),
+            <span class="variable">vals</span> = <span class="variable">getVals</span>.<span class="variable">call</span>(<span class="class">SPECIALS</span>);
+        
+        <span class="keyword">if</span> (<span class="variable">time</span> <span class="keyword">in</span> <span class="variable">vals</span>) {
+            <span class="variable">time</span> = <span class="string">'@'</span> + <span class="variable">keys</span>[<span class="variable">vals</span>.<span class="variable">indexOf</span>(<span class="variable">time</span>)];
+        }
+    
+        <span class="keyword">var</span> <span class="variable">result</span> = <span class="variable">time</span> + <span class="string">' '</span> + <span class="variable">command</span>.<span class="variable">toString</span>()
+        <span class="keyword">if</span> (<span class="variable">meta</span>) {
+            <span class="variable">result</span> += <span class="string">' #'</span> + <span class="variable">meta</span>;
+        }
+        
+        <span class="keyword">return</span> <span class="variable">result</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Sets the cron job to every reboot instead of a time pattern.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var command = '/usr/bin/env echo "starting some service..."';
+    tabs.removeAll(command);
+
+    var job = tabs.create(command);
+    job.everyReboot();
+});
+ </code></pre>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">everyReboot</span> = <span class="keyword">function</span>() {
+        <span class="this">this</span>.<span class="variable">clear</span>();
+        
+        <span class="variable">special</span> = <span class="string">'@reboot'</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Clears all time slots. Calling this method amounts to setting the time to '<em> </em> <em> </em> *'.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].clear());
+    }
+});
+ </code></pre>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">clear</span> = <span class="keyword">function</span>() {
+        <span class="variable">special</span> = <span class="variable">false</span>;
+        
+        <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">slots</span>.<span class="variable">length</span>; <span class="variable">i</span>++) {
+            <span class="variable">slots</span>[<span class="variable">i</span>].<span class="variable">clear</span>();
+        }
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Returns the minute time slot.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].minute().render());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>TimeSlot</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">minute</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="variable">slots</span>[<span class="number integer">0</span>];
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Returns the hour time slot.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].hour().render());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>TimeSlot</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">hour</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="variable">slots</span>[<span class="number integer">1</span>];
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Returns the day-of-the-month time slot.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].dom().render());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>TimeSlot</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">dom</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="variable">slots</span>[<span class="number integer">2</span>];
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Returns the month time slot.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].month().render());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>TimeSlot</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">month</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="variable">slots</span>[<span class="number integer">3</span>];
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Returns the day-of-the-week time slot.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].dow().render());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>TimeSlot</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">dow</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="variable">slots</span>[<span class="number integer">4</span>];
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Renders the object to a string as it would be written to the system. See <strong>render</strong>.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].toString());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>String</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">toString</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">render</span>();
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<ul><li><strong>class</strong>: <em>TimeSlot</em></li></ul>
+
+<p>A JavaScript representation of a time slot (e.g. minute, hour, month). Each slot has zero or
+more time ranges coresponding to the comma separated list in the cron sytax (e.g. <em>* / 4</em>, <em>10</em>, 5-15/2).</p>
+
+<h2>Examples</h2>
+
+<pre><code>var enum = ['jan','feb','mar','apr',
+            'may','jun','jul','aug',
+            'sep','oct','nov','dec'];
+
+var slot1 = new TimeSlot('Month', 1, 12, enum);
+var slot2 = new TimeSlot('Minute', 0, 59, null, '');</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>String</em>  <strong>name</strong> (e.g 'Minute', 'Month')</p></li><li><p><strong>param</strong>: <em>Number</em>  <strong>min</strong> minimum value</p></li><li><p><strong>param</strong>: <em>Number</em>  <strong>max</strong> maximum value</p></li><li><p><strong>param</strong>: <em>Object | null</em>  <strong>enum</strong> an object enumerating all possible values</p></li><li><p><strong>param</strong>: <em>String | null</em>  <strong>value</strong> a value to parse (e.g '19-0/2,0-3')</p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="keyword">function</span> <span class="class">TimeSlot</span>(<span class="variable">name</span>, <span class="variable">min</span>, <span class="variable">max</span>, <span class="keyword">enum</span>, <span class="variable">value</span>) {
+    <span class="keyword">var</span> <span class="variable">self</span>  = <span class="this">this</span>,
+        <span class="variable">name</span>  = <span class="variable">name</span>,
+        <span class="variable">min</span>   = <span class="variable">min</span>,
+        <span class="variable">max</span>   = <span class="variable">max</span>,
+        <span class="keyword">enum</span>  = <span class="keyword">enum</span>,
+        <span class="variable">parts</span> = [];</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Returns the minimum value for this time slot.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].month().getMin());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>Number</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">getMin</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="variable">min</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Returns the maximum value for this time slot.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].month().getMax());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>Number</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">getMax</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="variable">max</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Returns the allowed value enumeration for this time slot.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].month().getEnum());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>Object</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">getEnum</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="keyword">enum</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Renders the object to a string as it would be written to the system.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].month().render());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>Object</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">render</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="variable">parts</span>.<span class="variable">map</span>(<span class="keyword">function</span>(<span class="variable">part</span>) {
+            <span class="keyword">return</span> <span class="variable">part</span>.<span class="variable">toString</span>();
+        }).<span class="variable">join</span>(<span class="string">','</span>) || <span class="string">'*'</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Set this time slot to repeat every n units e.g. <em>* / n</em></p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        // every other month
+        jobs[i].month().every(2);
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Number</em>  <strong>number</strong></p></li><li><p><strong>return</strong>: <em>TimeRange</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">every</span> = <span class="keyword">function</span>(<span class="variable">n</span>) {
+        <span class="keyword">try</span> {
+            <span class="keyword">var</span> <span class="variable">range</span> = <span class="keyword">new</span> <span class="class">TimeRange</span>(<span class="variable">self</span>, <span class="string">'*/'</span> + <span class="variable">parseInt</span>(<span class="variable">n</span>));
+            <span class="variable">parts</span>.<span class="variable">push</span>(<span class="variable">range</span>);
+            
+            <span class="keyword">return</span> <span class="variable">range</span>;
+        }
+        <span class="keyword">catch</span> (<span class="variable">e</span>) {}
+        
+        <span class="keyword">return</span> <span class="keyword">null</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Set this time slot to repeat exactly at the specified values e.g. <em>0,12</em></p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        // at midnight and noon
+        jobs[i].hour().on(0, 12);
+        jobs[i].minute().on(0);
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Number</em>  <strong>value+</strong> one or more values</p></li><li><p><strong>return</strong>: <em>TimeRange</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">on</span> = <span class="keyword">function</span>() {
+        <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">arguments</span>.<span class="variable">length</span>; <span class="variable">i</span>++) {
+            <span class="variable">parts</span>.<span class="variable">push</span>(<span class="variable">arguments</span>[<span class="variable">i</span>]);
+        }
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Set this time slot to repeat between from and to e.g. <em>from - to</em></p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        // business hours
+        jobs[i].hour().during(9, 17);
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>Number</em>  <strong>from</strong></p></li><li><p><strong>param</strong>: <em>Number</em>  <strong>to</strong></p></li><li><p><strong>return</strong>: <em>TimeRange</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">during</span> = <span class="keyword">function</span>(<span class="variable">from</span>, <span class="variable">to</span>) {
+        <span class="keyword">try</span> {
+            <span class="keyword">var</span> <span class="variable">range</span> = <span class="keyword">new</span> <span class="class">TimeRange</span>(<span class="variable">self</span>, <span class="variable">from</span> + <span class="string">'-'</span> + <span class="variable">to</span>);
+            <span class="variable">parts</span>.<span class="variable">push</span>(<span class="variable">range</span>);
+            
+            <span class="keyword">return</span> <span class="variable">range</span>;
+        }
+        <span class="keyword">catch</span> (<span class="variable">e</span>) {}
+        
+        <span class="keyword">return</span> <span class="keyword">null</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Clears this time slot. Calling this method amounts to setting the slot to '*'.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].month().clear());
+    }
+});
+ </code></pre>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">clear</span> = <span class="keyword">function</span>() {
+        <span class="variable">parts</span> = [];
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Renders the object to a string as it would be written to the system. See <strong>render</strong>.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].month().toString());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>String</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">toString</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">render</span>();
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<ul><li><strong>class</strong>: <em>TimeRange</em></li></ul>
+
+<p>A JavaScript representation of a time range. Each range has a <em>from</em>, <em>to</em>, and <em>step</em> values.</p>
+
+<h2>Examples</h2>
+
+<pre><code>var enum = ['jan','feb','mar','apr',
+            'may','jun','jul','aug',
+            'sep','oct','nov','dec'];
+
+var slot   = new TimeSlot('Month', 1, 12, enum);
+var range1 = new TimeRange(slot, '* / 2'); // every other month
+var range2 = new TimeRange(slot, 'jun - sep'); // every summer</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>TimeSlot</em>  <strong>slot</strong> The owner time slot object</p></li><li><p><strong>param</strong>: <em>String</em>  <strong>range</strong> The range string e.g. <em>* / 2</em>, <em>jun - sep</em></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="keyword">function</span> <span class="class">TimeRange</span>(<span class="variable">s</span>, <span class="variable">range</span>) {
+    <span class="keyword">var</span> <span class="variable">self</span>  = <span class="this">this</span>,
+        <span class="variable">slot</span>  = <span class="variable">s</span>,
+        <span class="variable">from</span>  = <span class="keyword">null</span>,
+        <span class="variable">to</span>    = <span class="keyword">null</span>,
+        <span class="variable">step</span>  = <span class="number integer">1</span>;</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Renders the object to a string as it would be written to the system.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].hour().during(9, 17).render());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>String</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">render</span> = <span class="keyword">function</span>() {
+        <span class="keyword">var</span> <span class="variable">value</span> = <span class="string">'*'</span>;
+        
+        <span class="keyword">if</span> (<span class="variable">from</span> &<span class="variable">gt</span>; <span class="variable">slot</span>.<span class="variable">getMin</span>() || <span class="variable">to</span> &<span class="variable">lt</span>; <span class="variable">slot</span>.<span class="variable">getMax</span>()) {
+            <span class="variable">value</span> = <span class="variable">from</span> + <span class="string">'-'</span> + <span class="variable">to</span>;
+        }
+        <span class="keyword">if</span> (<span class="variable">step</span> != <span class="number integer">1</span>) {
+            <span class="variable">value</span> += <span class="string">'/'</span> + <span class="variable">step</span>;
+        }
+        
+        <span class="keyword">return</span> <span class="variable">value</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Set the step value for this range.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        // every other business hour
+        jobs[i].hour().during(9, 17).every(2);
+    }
+});
+ </code></pre>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">every</span> = <span class="keyword">function</span>(<span class="variable">value</span>) {
+        <span class="variable">step</span> = <span class="variable">parseInt</span>(<span class="variable">value</span>);
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Renders the object to a string as it would be written to the system. See <strong>render</strong>.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].hour().during(9, 17).toString());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>String</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">toString</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="this">this</span>.<span class="variable">render</span>();
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<ul><li><strong>class</strong>: <em>CronCommand</em></li></ul>
+
+<p>A JavaScript representation of the command part of a cron job.</p>
+
+<h2>Examples</h2>
+
+<pre><code>var command = new CronCommand('ls -l /');</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>String</em>  <strong>line</strong></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="keyword">function</span> <span class="class">CronCommand</span>(<span class="variable">line</span>) {
+    <span class="keyword">var</span> <span class="variable">command</span> = <span class="variable">line</span>;</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Returns true if the string that was passed occurs somewhere in this command.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        // false
+        console.log(jobs[i].getCommand().match('pwd'));
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>String</em>  <strong>line</strong></p></li><li><p><strong>return</strong>: <em>Boolean</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">match</span> = <span class="keyword">function</span>(<span class="variable">line</span>) {
+        <span class="keyword">if</span> (<span class="variable">command</span>.<span class="variable">indexOf</span>(<span class="variable">line</span>) &<span class="variable">gt</span>;= <span class="number integer">0</span>) {
+            <span class="keyword">return</span> <span class="variable">true</span>;
+        }
+        
+        <span class="keyword">return</span> <span class="variable">false</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Renders the object to a string as it would be written to the system.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findCommand('ls -l /');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].getCommand().toString());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>String</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">toString</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="variable">command</span>;
+    }
+}</code></pre>
+</td>
+</tr>	</body>
+</html></tbody></table>
