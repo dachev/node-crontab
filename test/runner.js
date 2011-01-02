@@ -1,5 +1,70 @@
 #!/usr/bin/env node
 
+//require('child_process').spawn = mockChild;
+function mockChild(command, args) {
+    var action = (args.indexOf('-l') >= 0) ? 'load' : 'save',
+        user   = '',
+        uRegEx = /-u\s([^\s]+)/;
+    
+    for (var i = 0; i < args.length; i++) {
+        var arg    = args[i],
+            tokens = arg.match(uRegEx);
+        
+        user = tokens && tokens[1] || '';
+        
+        if (user) { break; }
+    };
+    
+    function load(child) {
+        process.nextTick(function() {
+            if (mockChild.isRoot == false && user != '') {
+                child.stderr.emit('data', 'crontab: must be privileged to use -u');
+                child.emit('exit', '1');
+            }
+            else if (mockChild.hasTabs == false) {
+                child.stderr.emit('data', 'crontab: no crontab for ...');
+                child.emit('exit', '1');
+            }
+            else {
+                child.stdout.emit('data', mockChild.tabs);
+                child.emit('exit', '0');
+            }
+        });
+    }
+    
+    function save(child, tabs) {
+        process.nextTick(function() {
+            if (mockChild.isRoot == false && user != '') {
+                child.stderr.emit('data', 'crontab: must be privileged to use -u');
+                child.emit('exit', '1');
+            }
+            else {
+                mockChild.tabs = tabs;
+                child.emit('exit', '0');
+            }
+        });
+    }
+    
+    var child = new process.EventEmitter;
+    child.stdout = new process.EventEmitter;
+    child.stderr = new process.EventEmitter;
+    child.stdin  = {
+        buffer : '',
+        write  : function(tabs) { this.buffer = tabs; },
+        end    : function(tabs) { save(child, this.buffer); }
+    }
+    
+    if (action == 'load') {
+        load(child);
+    }
+    
+    return child;
+}
+mockChild.isRoot  = false;
+mockChild.hasTabs = false;
+mockChild.tabs    = '';
+
+
 var Vows    = require('vows'),
     Assert  = require('assert'),
     CronTab = require('../lib/index');
