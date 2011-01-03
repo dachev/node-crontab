@@ -83,7 +83,7 @@ mockChild.tabs = {
                '30 11 * * 6-0 /usr/bin/env echo "wake up"'],
     blago   : null,
     root    : [],
-    special : ['@reboot /usr/bin/env echo "starting service (reboot)"',
+    special : ['@reboot /usr/bin/env echo "starting service (reboot)" #reboot',
                '@hourly /usr/bin/env echo "starting service (hourly)"',
                '@daily /usr/bin/env echo "starting service (daily)"',
                '@weekly /usr/bin/env echo "starting service (weekly)"',
@@ -249,6 +249,7 @@ var canParseSpecialSyntax = {
             Assert.isArray(jobs);
             Assert.equal(jobs.length, 1);
             Assert.isTrue(job.isValid());
+            Assert.equal(job.comment(), 'reboot');
         },
         '@hourly':function(tab) {
             var jobs = tab.findCommand('hourly'),
