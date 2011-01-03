@@ -108,7 +108,7 @@ code .this { color: #19469D; }</style>
 		</script>
 	</head>
 	<body>
-<table id="source"><tbody><tr><td><h1>Crontab</h1><p>A module for reading, manipulating, and writing user cron 	jobs from <a href="http://www.nodejs.org">node</a>. Check out <a href="http://github.com/dachev/node-crontab">github</a> for the source and 	installation guide.</p></td><td></td></tr><tr class="filename"><td><h2 id="lib/index.js"><a href="#">index</a></h2></td><td>lib/index.js</td></tr><tr class="code">
+<table id="source"><tbody><tr><td><h1>Crontab</h1><p>A module for reading, manipulating, and writing user cron 	jobs with <a href="http://www.nodejs.org">node</a>. Check out <a href="http://github.com/dachev/node-crontab">github</a> for the source and 	installation guide.</p></td><td></td></tr><tr class="filename"><td><h2 id="lib/index.js"><a href="#">index</a></h2></td><td>lib/index.js</td></tr><tr class="code">
 <td class="docs">
 <p>Constants
  </p>
@@ -239,10 +239,10 @@ new CronTab(function(err, tab) {
         });
         <span class="variable">child</span>.<span class="variable">on</span>(<span class="string">'exit'</span>, <span class="keyword">function</span> (<span class="variable">code</span>) {
             <span class="keyword">if</span> (<span class="variable">code</span> == <span class="number integer">0</span>) {
-                <span class="variable">cb</span>(<span class="keyword">null</span>, <span class="variable">self</span>);
+                <span class="variable">cb</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">cb</span>(<span class="keyword">null</span>, <span class="variable">self</span>);
             }
             <span class="keyword">else</span> {
-                <span class="variable">cb</span>({<span class="variable">message</span>:<span class="variable">stderr</span>}, <span class="variable">self</span>);
+                <span class="variable">cb</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">cb</span>({<span class="variable">message</span>:<span class="variable">stderr</span>}, <span class="variable">self</span>);
             }
         });
         
@@ -556,7 +556,7 @@ var job2 = new CronJob(null, 'ls -l /', 'comment');</code></pre>
         <span class="keyword">if</span> (<span class="variable">timeIdx</span> &<span class="variable">gt</span>;=<span class="number integer">0</span> ) {
             <span class="variable">time</span> = <span class="string">'@'</span> + <span class="variable">keys</span>[<span class="variable">timeIdx</span>];
         }
-    
+        
         <span class="keyword">var</span> <span class="variable">result</span> = <span class="variable">time</span> + <span class="string">' '</span> + <span class="variable">command</span>.<span class="variable">toString</span>()
         <span class="keyword">if</span> (<span class="variable">meta</span>) {
             <span class="variable">result</span> += <span class="string">' #'</span> + <span class="variable">meta</span>;
