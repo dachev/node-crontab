@@ -1,36 +1,19 @@
 
 # node-crontab
       
-Allows reading, manipulating, and writing user crontabs from [node.js](http://nodejs.org).
+Allows reading, manipulating, and writing user crontabs with [node.js](http://nodejs.org).
 
 ## Installation
     $ npm install crontab
 
-## Usage
-    require('crontab').load(cronLoaded);
-
-    function cronLoaded(err, tabs) {
-        if (err) { console.log(err); process.exit(1); }
-        
-        var command = '/usr/bin/env echo "starting some service..."';
-        tabs.removeAll(command);
-        
-        var item = tabs.create(command);
-        item.everyReboot();
-        
-        tabs.save(cronSaved);
-    }
-    
-    function cronSaved(err, tabs) {
-        if (err) { console.log(err); process.exit(1); }
-        
-        console.log('saved');
-    }
+## Examples
+  * Simple boot example - [gist](http://gist.github.com/763074)
+  * A realistic boot example with [forever](http://github.com/indexzero/forever) - [gist](http://gist.github.com/763076)
 
 ## Documentation
 API [reference](http://dachev.github.com/node-crontab).
 
-## Node Compatibility
+## Compatibility
     
 The latest revision of node-crontab is compatible with node --version:
 
