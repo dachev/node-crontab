@@ -38,7 +38,7 @@ function mockChild(command, args) {
                 return;
             }
             
-            child.stdout.emit('data', tabs);
+            child.stdout.emit('data', tabs.join('\n'));
             child.emit('exit', '0');
         });
     }
@@ -50,7 +50,7 @@ function mockChild(command, args) {
                 child.emit('exit', '1');
             }
             else {
-                mockChild.tabs[user || mockChild.user] = newTabs;
+                mockChild.tabs[user || mockChild.user] = newTabs.split('\n');
                 child.emit('exit', '0');
             }
         });
@@ -73,24 +73,25 @@ function mockChild(command, args) {
 }
 mockChild.user = 'blago';
 mockChild.tabs = {
-    alice : '0 8-17 * * 1-5 /usr/bin/env echo "check email" #comment\n\
-            * 19-0,0-3 * * 1-5 /usr/bin/env echo "hack node.js"\n\
-            30 11 * * 6-0 /usr/bin/env echo "wake up"\n\
-            * * * 5-8 * /usr/bin/env echo "go to Bulgaria"\n\
-            30 9 24 dec * /usr/bin/env echo "get presents"\n\
-            @reboot /usr/bin/env echo "starting service (reboot)"\n\
-            @hourly /usr/bin/env echo "starting service (hourly)"\n\
-            @daily /usr/bin/env echo "starting service (daily)"\n\
-            @weekly /usr/bin/env echo "starting service (weekly)"\n\
-            @monthly /usr/bin/env echo "starting service (monthly)"\n\
-            @yearly /usr/bin/env echo "starting service (yearly)"\n\
-            @annually /usr/bin/env echo "starting service (annually)"\n\
-            @midnight /usr/bin/env echo "starting service (midnight)"\n',
-    bob   : '0 8-17 * * 1-5 /usr/bin/env echo "check email"\n\
-            * 19-0,0-3 * * 1-5 /usr/bin/env echo "hack node.js"\n\
-            30 11 * * 6-0 /usr/bin/env echo "wake up"\n',
-    blago : null,
-    root  : ''
+    alice   : ['0 8-17 * * 1-5 /usr/bin/env echo "check email"',
+               '* 19-0,0-3 * * 1-5 /usr/bin/env echo "hack node.js"',
+               '30 11 * * 6-0 /usr/bin/env echo "wake up"',
+               '* * * 5-8 * /usr/bin/env echo "go to Bulgaria"',
+               '30 9 24 12 * /usr/bin/env echo "get presents"'],
+    bob     : ['0 8-17 * * 1-5 /usr/bin/env echo "check email"',
+               '* 19-0,0-3 * * 1-5 /usr/bin/env echo "hack node.js"',
+               '30 11 * * 6-0 /usr/bin/env echo "wake up"'],
+    blago   : null,
+    root    : [],
+    special : ['@reboot /usr/bin/env echo "starting service (reboot)"',
+               '@hourly /usr/bin/env echo "starting service (hourly)"',
+               '@daily /usr/bin/env echo "starting service (daily)"',
+               '@weekly /usr/bin/env echo "starting service (weekly)"',
+               '@monthly /usr/bin/env echo "starting service (monthly)"',
+               '@yearly /usr/bin/env echo "starting service (yearly)"',
+               '@annually /usr/bin/env echo "starting service (annually)"',
+               '@midnight /usr/bin/env echo "starting service (midnight)"'],
+    comments: ['0 8-17 * * 1-5 /usr/bin/env echo "check email" #every business hour']
 };
 
 
@@ -194,7 +195,7 @@ var userLoadsHerOwnNonEmptyCrons = {
             Assert.isNull(err);
             Assert.isObject(tab);
             Assert.isArray(tab.getJobs());
-            Assert.equal(tab.getJobs().length, 13);
+            Assert.equal(tab.getJobs().length, 5);
         }
     }
 };
@@ -221,19 +222,26 @@ var userLoadsHerOwnNonEmptyCronsAgain = {
             Assert.isNull(err);
             Assert.isObject(tab);
             Assert.isArray(tab.getJobs());
-            Assert.equal(tab.getJobs().length, 13);
+            Assert.equal(tab.getJobs().length, 5);
         },
         'are the same':function(err, tab) {
-            Assert.equal(tab.render(), mockChild.tabs.alice);
+            Assert.equal(tab.render().trim(), mockChild.tabs.alice.join('\n').trim());
         }
     }
 };
 var canParseSpecialSyntax = {
     'can parse special cron syntax': {
-        topic:function() {
-            return userLoadsHerOwnNonEmptyCrons.tab;
+        topic: function() {
+            mockChild.user = 'special';
+            return loadTabs('');
         },
-        '@reboot':function(tab) {
+        'should succeed':function(err, tab) {
+            Assert.isNull(err);
+            Assert.isObject(tab);
+            Assert.isArray(tab.getJobs());
+            Assert.equal(tab.getJobs().length, 8);
+        },
+        '@reboot':function(err, tab) {
             var jobs = tab.findCommand('reboot'),
                 job  = jobs[0];
             
@@ -334,6 +342,24 @@ var canParseSpecialSyntax = {
         }
     }
 };
+var canParseInlineComments = {
+    'can parse inline comments' : {
+        topic: function() {
+            mockChild.user = 'comments';
+            return loadTabs('');
+        },
+        'should succeed':function(err, tab) {
+            Assert.isNull(err);
+            Assert.isObject(tab);
+            Assert.isArray(tab.getJobs());
+            Assert.equal(tab.getJobs().length, 1);
+        },
+        'comment should match':function(err, tab) {
+            var job = tab.getJobs()[0];
+            Assert.equal(job.comment(), 'every business hour');
+        }
+    }
+}
 
 var Vows    = require('vows'),
     Assert  = require('assert'),
@@ -345,7 +371,8 @@ Vows.describe('crontab').
     addBatch(rootLoadsAnoterNonExistingUserCrons).
     addBatch(userLoadsHisOwnEmptyCrons).
     addBatch(userLoadsHerOwnNonEmptyCrons).
-    addBatch(canParseSpecialSyntax).
     addBatch(userSavesHerOwnNonEmptyCrons).
     addBatch(userLoadsHerOwnNonEmptyCronsAgain).
+    addBatch(canParseSpecialSyntax).
+    addBatch(canParseInlineComments).
     export(module);
