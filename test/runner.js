@@ -91,7 +91,8 @@ mockChild.tabs = {
                '@yearly /usr/bin/env echo "starting service (yearly)"',
                '@annually /usr/bin/env echo "starting service (annually)"',
                '@midnight /usr/bin/env echo "starting service (midnight)"'],
-    comments: ['0 8-17 * * 1-5 /usr/bin/env echo "check email" #every business hour']
+    comments: ['0 8-17 * * 1-5 /usr/bin/env echo "check email" #every business hour'],
+    commands: ['0 8-17 * * 1-5 /usr/bin/env echo "check email" #every business hour'],
 };
 
 
@@ -131,7 +132,7 @@ var nonRootLoadsAnoterUserCrons = {
             mockChild.user = 'blago';
             return loadTabs('alice');
         },
-        'should fail':function(err, tab) {
+        'should fail loading':function(err, tab) {
             Assert.isObject(err);
             Assert.isString(err.message);
             Assert.matches(err.message, /privileged/);
@@ -144,7 +145,7 @@ var rootLoadsAnoterUserCrons = {
             mockChild.user = 'root';
             return loadTabs('bob');
         },
-        'should succeed':function(err, tab) {
+        'should succeed loading':function(err, tab) {
             rootLoadsAnoterUserCrons.tab = tab;
             
             Assert.isNull(err);
@@ -160,7 +161,7 @@ var rootLoadsAnoterNonExistingUserCrons = {
             mockChild.user = 'root';
             return loadTabs('tom');
         },
-        'should fail':function(err, tab) {
+        'should fail loading':function(err, tab) {
             Assert.isObject(err);
             Assert.isString(err.message);
             Assert.matches(err.message, /unknown/);
@@ -173,7 +174,7 @@ var userLoadsHisOwnEmptyCrons = {
             mockChild.user = 'blago';
             return loadTabs('');
         },
-        'should succeed':function(err, tab) {
+        'should succeed loading':function(err, tab) {
             userLoadsHisOwnEmptyCrons.tab = tab;
             
             Assert.isNull(err);
@@ -189,7 +190,7 @@ var userLoadsHerOwnNonEmptyCrons = {
             mockChild.user = 'alice';
             return loadTabs('');
         },
-        'should succeed':function(err, tab) {
+        'should succeed loading':function(err, tab) {
             userLoadsHerOwnNonEmptyCrons.tab = tab;
             
             Assert.isNull(err);
@@ -204,7 +205,7 @@ var userSavesHerOwnNonEmptyCrons = {
         topic: function() {
             return saveTabs(userLoadsHerOwnNonEmptyCrons.tab);
         },
-        'should succeed':function(err, tab) {
+        'should succeed saving':function(err, tab) {
             Assert.isNull(err);
             Assert.isObject(tab);
         }
@@ -216,7 +217,7 @@ var userLoadsHerOwnNonEmptyCronsAgain = {
             mockChild.user = 'alice';
             return loadTabs('');
         },
-        'should succeed':function(err, tab) {
+        'should succeed loading':function(err, tab) {
             userLoadsHerOwnNonEmptyCronsAgain.tab = tab;
             
             Assert.isNull(err);
@@ -235,7 +236,7 @@ var canParseSpecialSyntax = {
             mockChild.user = 'special';
             return loadTabs('');
         },
-        'should succeed':function(err, tab) {
+        'should succeed loading':function(err, tab) {
             Assert.isNull(err);
             Assert.isObject(tab);
             Assert.isArray(tab.getJobs());
@@ -348,7 +349,7 @@ var canParseInlineComments = {
             mockChild.user = 'comments';
             return loadTabs('');
         },
-        'should succeed':function(err, tab) {
+        'should succeed loading':function(err, tab) {
             Assert.isNull(err);
             Assert.isObject(tab);
             Assert.isArray(tab.getJobs());
@@ -357,6 +358,24 @@ var canParseInlineComments = {
         'comment should match':function(err, tab) {
             var job = tab.getJobs()[0];
             Assert.equal(job.comment(), 'every business hour');
+        }
+    }
+}
+var canParseCommands = {
+    'can parse commands' : {
+        topic: function() {
+            mockChild.user = 'commands';
+            return loadTabs('');
+        },
+        'should succeed loading':function(err, tab) {
+            Assert.isNull(err);
+            Assert.isObject(tab);
+            Assert.isArray(tab.getJobs());
+            Assert.equal(tab.getJobs().length, 1);
+        },
+        'command should match':function(err, tab) {
+            var job = tab.getJobs()[0];
+            Assert.equal(job.command(), '/usr/bin/env echo "check email"');
         }
     }
 }
@@ -374,5 +393,6 @@ Vows.describe('crontab').
     addBatch(userSavesHerOwnNonEmptyCrons).
     addBatch(userLoadsHerOwnNonEmptyCronsAgain).
     addBatch(canParseSpecialSyntax).
+    addBatch(canParseCommands).
     addBatch(canParseInlineComments).
     export(module);

@@ -759,7 +759,7 @@ var job2 = new CronJob(null, 'ls -l /', 'comment');</code></pre>
 
 <h2></h2>
 
-<ul><li><p><strong>param</strong>: <em>String</em>  <strong>[command]</strong></p></li><li><p><strong>return</strong>: <em>CronCommand</em> </p><p> </p></li></ul>
+<ul><li><p><strong>param</strong>: <em>String</em>  <strong>[command]</strong></p></li><li><p><strong>return</strong>: <em>String</em> </p><p> </p></li></ul>
 </td>
 <td class="code">
 <pre><code><span class="this">this</span>.<span class="variable">command</span> = <span class="keyword">function</span>(<span class="variable">c</span>) {
@@ -767,7 +767,7 @@ var job2 = new CronJob(null, 'ls -l /', 'comment');</code></pre>
             <span class="variable">command</span> = <span class="keyword">new</span> <span class="class">CronCommand</span>(<span class="variable">c</span>.<span class="variable">toString</span>());
         }
         
-        <span class="keyword">return</span> <span class="variable">command</span>;
+        <span class="keyword">return</span> <span class="variable">command</span>.<span class="variable">toString</span>();
     }</code></pre>
 </td>
 </tr>
