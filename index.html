@@ -210,7 +210,8 @@ new CronTab(function(err, tab) {
 <pre><code>new CronTab(function(err, tab) {
     if (err) { console.log(err); process.exit(1); }
 
-    tab.removeAll('ls -l /');
+    var jobs = tab.findCommand('ls -l /');
+    tab.remove(jobs);
 
     tab.save(function(err, tab) {
         if (err) { console.log(err); process.exit(1); }
@@ -335,7 +336,7 @@ new CronTab(function(err, tab) {
 </tr>
 <tr class="code">
 <td class="docs">
-<p>Returns a list of jobs using the specified command.</p>
+<p>Returns a list of jobs (substring) matching the specified command.</p>
 
 <h2>Examples</h2>
 
@@ -370,36 +371,42 @@ new CronTab(function(err, tab) {
 </tr>
 <tr class="code">
 <td class="docs">
-<p>Removes all jobs using the specified command.</p>
+<p>Returns a list of jobs (substring) matching the specified inline comment.</p>
 
 <h2>Examples</h2>
 
 <pre><code>new CronTab(function(err, tab) {
     if (err) { console.log(err); process.exit(1); }
 
-    tab.removeAll('ls -l /');
+    var jobs = tab.findComment('this should run every night');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].render());
+    }
 });</code></pre>
 
 <h2></h2>
 
-<ul><li><p><strong>param</strong>: <em>String</em>  <strong>command</strong></p><p> </p></li></ul>
+<ul><li><p><strong>param</strong>: <em>String</em>  <strong>comment</strong></p></li><li><p><strong>return</strong>: <em>Array[CronJob]</em> </p><p> </p></li></ul>
 </td>
 <td class="code">
-<pre><code><span class="this">this</span>.<span class="variable">removeAll</span> = <span class="keyword">function</span>(<span class="variable">command</span>) {
-        <span class="keyword">var</span> <span class="variable">results</span> = <span class="this">this</span>.<span class="variable">findCommand</span>(<span class="variable">command</span>);
+<pre><code><span class="this">this</span>.<span class="variable">findComment</span> = <span class="keyword">function</span>(<span class="variable">comment</span>) {
+        <span class="keyword">var</span> <span class="variable">results</span> = [];
         
-        <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">results</span>.<span class="variable">length</span>; <span class="variable">i</span>++) {
-            <span class="keyword">var</span> <span class="variable">result</span> = <span class="variable">results</span>[<span class="variable">i</span>];
-            <span class="this">this</span>.<span class="variable">remove</span>(<span class="variable">result</span>);
+        <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">jobs</span>.<span class="variable">length</span>; <span class="variable">i</span>++) {
+            <span class="keyword">var</span> <span class="variable">job</span> = <span class="variable">jobs</span>[<span class="variable">i</span>];
+            
+            <span class="keyword">if</span> (<span class="variable">job</span>.<span class="variable">comment</span>().<span class="variable">indexOf</span>(<span class="variable">comment</span>) &<span class="variable">gt</span>;= <span class="number integer">0</span>) {
+                <span class="variable">results</span>.<span class="variable">push</span>(<span class="variable">job</span>);
+            }
         }
         
-        <span class="variable">truncateLines</span>();
+        <span class="keyword">return</span> <span class="variable">results</span>;
     }</code></pre>
 </td>
 </tr>
 <tr class="code">
 <td class="docs">
-<p>Removes the specified job from the crontab.</p>
+<p>Removes the specified jobs from the crontab.</p>
 
 <h2>Examples</h2>
 
@@ -407,37 +414,29 @@ new CronTab(function(err, tab) {
     if (err) { console.log(err); process.exit(1); }
 
     var jobs = tab.findCommand('ls -l /');
-    for (var i = 0; i &lt; jobs.length; i++) {
-        tab.remove(jobs[i]);
-    }
+    tab.remove(jobs);
 });</code></pre>
 
 <h2></h2>
 
-<ul><li><p><strong>param</strong>: <em>CronJob</em>  <strong>job</strong></p><p> </p></li></ul>
+<ul><li><p><strong>param</strong>: <em>String</em>  <strong>Array[CronJob]</strong></p><p> </p></li></ul>
 </td>
 <td class="code">
-<pre><code><span class="this">this</span>.<span class="variable">remove</span> = <span class="keyword">function</span>(<span class="variable">job</span>) {
-        <span class="keyword">var</span> <span class="variable">oldJobs</span>  = <span class="variable">jobs</span>;
-        <span class="keyword">var</span> <span class="variable">oldLines</span> = <span class="variable">lines</span>;
-        
-        <span class="variable">jobs</span>  = [];
-        <span class="variable">lines</span> = [];
-        
-        <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">oldJobs</span>.<span class="variable">length</span>; <span class="variable">i</span>++) {
-            <span class="keyword">var</span> <span class="variable">oldJob</span> = <span class="variable">oldJobs</span>[<span class="variable">i</span>];
-            
-            <span class="keyword">if</span> (<span class="variable">oldJob</span> != <span class="variable">job</span>) {
-                <span class="variable">jobs</span>.<span class="variable">push</span>(<span class="variable">oldJob</span>);
-            }
+<pre><code><span class="this">this</span>.<span class="variable">remove</span> = <span class="keyword">function</span>(<span class="variable">jobs</span>) {
+        <span class="keyword">if</span> (!(<span class="variable">jobs</span> <span class="variable">instanceof</span> <span class="class">CronJob</span>) &<span class="variable">amp</span>;&<span class="variable">amp</span>; !(<span class="variable">jobs</span> <span class="variable">instanceof</span> <span class="class">Array</span>)) {
+            <span class="keyword">return</span>;
         }
-        <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">oldLines</span>.<span class="variable">length</span>; <span class="variable">i</span>++) {
-            <span class="keyword">var</span> <span class="variable">oldLine</span> = <span class="variable">oldLines</span>[<span class="variable">i</span>];
-            
-            <span class="keyword">if</span> (<span class="variable">oldLine</span> != <span class="variable">job</span>) {
-                <span class="variable">lines</span>.<span class="variable">push</span>(<span class="variable">oldLine</span>);
-            }
+        
+        <span class="keyword">if</span> (<span class="variable">jobs</span> <span class="variable">instanceof</span> <span class="class">CronJob</span>) {
+            <span class="variable">jobs</span> = [<span class="variable">jobs</span>];
         }
+        
+        <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">jobs</span>.<span class="variable">length</span>; <span class="variable">i</span>++) {
+            <span class="keyword">var</span> <span class="variable">job</span> = <span class="variable">jobs</span>[<span class="variable">i</span>];
+            <span class="variable">remove</span>(<span class="variable">job</span>);
+        }
+        
+        <span class="variable">truncateLines</span>();
     }</code></pre>
 </td>
 </tr>
@@ -450,7 +449,8 @@ new CronTab(function(err, tab) {
 <pre><code>new CronTab(function(err, tab) {
     if (err) { console.log(err); process.exit(1); }
 
-    tab.removeAll('ls -l /');
+    var jobs = tab.findCommand('ls -l /');
+    tab.remove(jobs);
     tab.reset();
 });
  </code></pre>
@@ -476,7 +476,7 @@ var job2 = new CronJob(null, 'ls -l /', 'comment');</code></pre>
 
 <h2></h2>
 
-<ul><li><p><strong>param</strong>: <em>String | null</em>  <strong>line</strong></p></li><li><p><strong>param</strong>: <em>String</em>  <strong>[command]</strong></p></li><li><p><strong>param</strong>: <em>String</em>  <strong>[meta]</strong></p></li></ul>
+<ul><li><p><strong>param</strong>: <em>String | null</em>  <strong>line</strong></p></li><li><p><strong>param</strong>: <em>String</em>  <strong>[command]</strong></p></li><li><p><strong>param</strong>: <em>String</em>  <strong>[comment]</strong></p></li></ul>
 </td>
 <td class="code">
 <pre><code><span class="keyword">function</span> <span class="class">CronJob</span>(<span class="variable">line</span>, <span class="variable">c</span>, <span class="variable">m</span>) {
@@ -576,7 +576,8 @@ var job2 = new CronJob(null, 'ls -l /', 'comment');</code></pre>
     if (err) { console.log(err); process.exit(1); }
 
     var command = '/usr/bin/env echo "starting some service..."';
-    tabs.removeAll(command);
+        jobs    = tab.findCommand(command);
+    tab.remove(jobs);
 
     var job = tabs.create(command);
     job.everyReboot();
@@ -759,7 +760,7 @@ var job2 = new CronJob(null, 'ls -l /', 'comment');</code></pre>
 
 <h2></h2>
 
-<ul><li><p><strong>param</strong>: <em>String</em>  <strong>[command]</strong></p></li><li><p><strong>return</strong>: <em>CronCommand</em> </p><p> </p></li></ul>
+<ul><li><p><strong>param</strong>: <em>String</em>  <strong>[command]</strong></p></li><li><p><strong>return</strong>: <em>String</em> </p><p> </p></li></ul>
 </td>
 <td class="code">
 <pre><code><span class="this">this</span>.<span class="variable">command</span> = <span class="keyword">function</span>(<span class="variable">c</span>) {
@@ -767,7 +768,7 @@ var job2 = new CronJob(null, 'ls -l /', 'comment');</code></pre>
             <span class="variable">command</span> = <span class="keyword">new</span> <span class="class">CronCommand</span>(<span class="variable">c</span>.<span class="variable">toString</span>());
         }
         
-        <span class="keyword">return</span> <span class="variable">command</span>;
+        <span class="keyword">return</span> <span class="variable">command</span>.<span class="variable">toString</span>();
     }</code></pre>
 </td>
 </tr>
