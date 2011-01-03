@@ -73,12 +73,19 @@ function mockChild(command, args) {
 }
 mockChild.user = 'blago';
 mockChild.tabs = {
-    alice : '0 8-17 * * 1-5 /usr/bin/env echo "check email"\n\
+    alice : '0 8-17 * * 1-5 /usr/bin/env echo "check email" #comment\n\
             * 19-0,0-3 * * 1-5 /usr/bin/env echo "hack node.js"\n\
             30 11 * * 6-0 /usr/bin/env echo "wake up"\n\
             * * * 5-8 * /usr/bin/env echo "go to Bulgaria"\n\
             30 9 24 dec * /usr/bin/env echo "get presents"\n\
-            @reboot /usr/bin/env echo "starting some service..."\n',
+            @reboot /usr/bin/env echo "starting service (reboot)"\n\
+            @hourly /usr/bin/env echo "starting service (hourly)"\n\
+            @daily /usr/bin/env echo "starting service (daily)"\n\
+            @weekly /usr/bin/env echo "starting service (weekly)"\n\
+            @monthly /usr/bin/env echo "starting service (monthly)"\n\
+            @yearly /usr/bin/env echo "starting service (yearly)"\n\
+            @annually /usr/bin/env echo "starting service (annually)"\n\
+            @midnight /usr/bin/env echo "starting service (midnight)"\n',
     bob   : '0 8-17 * * 1-5 /usr/bin/env echo "check email"\n\
             * 19-0,0-3 * * 1-5 /usr/bin/env echo "hack node.js"\n\
             30 11 * * 6-0 /usr/bin/env echo "wake up"\n',
@@ -187,7 +194,7 @@ var userLoadsHerOwnNonEmptyCrons = {
             Assert.isNull(err);
             Assert.isObject(tab);
             Assert.isArray(tab.getJobs());
-            Assert.equal(tab.getJobs().length, 6);
+            Assert.equal(tab.getJobs().length, 13);
         }
     }
 };
@@ -214,16 +221,119 @@ var userLoadsHerOwnNonEmptyCronsAgain = {
             Assert.isNull(err);
             Assert.isObject(tab);
             Assert.isArray(tab.getJobs());
-            Assert.equal(tab.getJobs().length, 6);
+            Assert.equal(tab.getJobs().length, 13);
         },
-        'are the same':function(err, thisTab) {
-            var firstTab = userLoadsHerOwnNonEmptyCrons.tab;
-            
-            Assert.equal(firstTab.render(), thisTab.render());
+        'are the same':function(err, tab) {
+            Assert.equal(tab.render(), mockChild.tabs.alice);
         }
     }
 };
-
+var canParseSpecialSyntax = {
+    'can parse special cron syntax': {
+        topic:function() {
+            return userLoadsHerOwnNonEmptyCrons.tab;
+        },
+        '@reboot':function(tab) {
+            var jobs = tab.findCommand('reboot'),
+                job  = jobs[0];
+            
+            Assert.isArray(jobs);
+            Assert.equal(jobs.length, 1);
+            Assert.isTrue(job.isValid());
+        },
+        '@hourly':function(tab) {
+            var jobs = tab.findCommand('hourly'),
+                job  = jobs[0];
+            
+            Assert.isArray(jobs);
+            Assert.equal(jobs.length, 1);
+            Assert.isTrue(job.isValid());
+            Assert.equal(job.minute().toString(), '0');
+            Assert.equal(job.hour().toString(), '*');
+            Assert.equal(job.dom().toString(), '*');
+            Assert.equal(job.month().toString(), '*');
+            Assert.equal(job.dow().toString(), '*');
+        },
+        '@daily':function(tab) {
+            var jobs = tab.findCommand('daily'),
+                job  = jobs[0];
+            
+            Assert.isArray(jobs);
+            Assert.equal(jobs.length, 1);
+            Assert.isTrue(job.isValid());
+            Assert.equal(job.minute().toString(), '0');
+            Assert.equal(job.hour().toString(), '0');
+            Assert.equal(job.dom().toString(), '*');
+            Assert.equal(job.month().toString(), '*');
+            Assert.equal(job.dow().toString(), '*');
+        },
+        '@weekly':function(tab) {
+            var jobs = tab.findCommand('weekly'),
+                job  = jobs[0];
+            
+            Assert.isArray(jobs);
+            Assert.equal(jobs.length, 1);
+            Assert.isTrue(job.isValid());
+            Assert.equal(job.minute().toString(), '0');
+            Assert.equal(job.hour().toString(), '0');
+            Assert.equal(job.dom().toString(), '*');
+            Assert.equal(job.month().toString(), '*');
+            Assert.equal(job.dow().toString(), '0');
+        },
+        '@monthly':function(tab) {
+            var jobs = tab.findCommand('monthly'),
+                job  = jobs[0];
+            
+            Assert.isArray(jobs);
+            Assert.equal(jobs.length, 1);
+            Assert.isTrue(job.isValid());
+            Assert.equal(job.minute().toString(), '0');
+            Assert.equal(job.hour().toString(), '0');
+            Assert.equal(job.dom().toString(), '1');
+            Assert.equal(job.month().toString(), '*');
+            Assert.equal(job.dow().toString(), '*');
+        },
+        '@yearly':function(tab) {
+            var jobs = tab.findCommand('yearly'),
+                job  = jobs[0];
+            
+            Assert.isArray(jobs);
+            Assert.equal(jobs.length, 1);
+            Assert.isTrue(job.isValid());
+            Assert.equal(job.minute().toString(), '0');
+            Assert.equal(job.hour().toString(), '0');
+            Assert.equal(job.dom().toString(), '1');
+            Assert.equal(job.month().toString(), '1');
+            Assert.equal(job.dow().toString(), '*');
+        },
+        '@annually':function(tab) {
+            var jobs = tab.findCommand('yearly'),
+                job  = jobs[0];
+            
+            Assert.isArray(jobs);
+            Assert.equal(jobs.length, 1);
+            Assert.isTrue(job.isValid());
+            Assert.equal(job.minute().toString(), '0');
+            Assert.equal(job.hour().toString(), '0');
+            Assert.equal(job.dom().toString(), '1');
+            Assert.equal(job.month().toString(), '1');
+            Assert.equal(job.dow().toString(), '*');
+        },
+        '@midnight':function(tab) {
+            var jobs = tab.findCommand('midnight'),
+                job  = jobs[0];
+            
+            Assert.isArray(jobs);
+            Assert.equal(jobs.length, 1);
+            Assert.isTrue(job.isValid());
+            Assert.equal(job.minute().toString(), '0');
+            Assert.equal(job.hour().toString(), '0');
+            Assert.equal(job.dom().toString(), '*');
+            Assert.equal(job.month().toString(), '*');
+            Assert.equal(job.dow().toString(), '*');
+        }
+    }
+};
 
 var Vows    = require('vows'),
     Assert  = require('assert'),
@@ -235,6 +345,7 @@ Vows.describe('crontab').
     addBatch(rootLoadsAnoterNonExistingUserCrons).
     addBatch(userLoadsHisOwnEmptyCrons).
     addBatch(userLoadsHerOwnNonEmptyCrons).
+    addBatch(canParseSpecialSyntax).
     addBatch(userSavesHerOwnNonEmptyCrons).
     addBatch(userLoadsHerOwnNonEmptyCronsAgain).
     export(module);
