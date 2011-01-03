@@ -336,7 +336,7 @@ new CronTab(function(err, tab) {
 </tr>
 <tr class="code">
 <td class="docs">
-<p>Returns a list of jobs (substring) matching the specified command.</p>
+<p>Returns a list of jobs matching the specified command.</p>
 
 <h2>Examples</h2>
 
@@ -351,16 +351,16 @@ new CronTab(function(err, tab) {
 
 <h2></h2>
 
-<ul><li><p><strong>param</strong>: <em>String</em>  <strong>command</strong></p></li><li><p><strong>return</strong>: <em>Array[CronJob]</em> </p><p> </p></li></ul>
+<ul><li><p><strong>param</strong>: <em>String | RegEx</em>  <strong>pattern</strong></p></li><li><p><strong>return</strong>: <em>Array[CronJob]</em> </p><p> </p></li></ul>
 </td>
 <td class="code">
-<pre><code><span class="this">this</span>.<span class="variable">findCommand</span> = <span class="keyword">function</span>(<span class="variable">command</span>) {
+<pre><code><span class="this">this</span>.<span class="variable">findCommand</span> = <span class="keyword">function</span>(<span class="variable">pattern</span>) {
         <span class="keyword">var</span> <span class="variable">results</span> = [];
         
         <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">jobs</span>.<span class="variable">length</span>; <span class="variable">i</span>++) {
             <span class="keyword">var</span> <span class="variable">job</span> = <span class="variable">jobs</span>[<span class="variable">i</span>];
             
-            <span class="keyword">if</span> (<span class="variable">job</span>.<span class="variable">command</span>().<span class="variable">match</span>(<span class="variable">command</span>)) {
+            <span class="keyword">if</span> (<span class="variable">job</span>.<span class="variable">command</span>().<span class="variable">match</span>(<span class="variable">pattern</span>)) {
                 <span class="variable">results</span>.<span class="variable">push</span>(<span class="variable">job</span>);
             }
         }
@@ -371,7 +371,7 @@ new CronTab(function(err, tab) {
 </tr>
 <tr class="code">
 <td class="docs">
-<p>Returns a list of jobs (substring) matching the specified inline comment.</p>
+<p>Returns a list of jobs matching the specified inline comment.</p>
 
 <h2>Examples</h2>
 
@@ -386,16 +386,16 @@ new CronTab(function(err, tab) {
 
 <h2></h2>
 
-<ul><li><p><strong>param</strong>: <em>String</em>  <strong>comment</strong></p></li><li><p><strong>return</strong>: <em>Array[CronJob]</em> </p><p> </p></li></ul>
+<ul><li><p><strong>param</strong>: <em>String | RegEx</em>  <strong>pattern</strong></p></li><li><p><strong>return</strong>: <em>Array[CronJob]</em> </p><p> </p></li></ul>
 </td>
 <td class="code">
-<pre><code><span class="this">this</span>.<span class="variable">findComment</span> = <span class="keyword">function</span>(<span class="variable">comment</span>) {
+<pre><code><span class="this">this</span>.<span class="variable">findComment</span> = <span class="keyword">function</span>(<span class="variable">pattern</span>) {
         <span class="keyword">var</span> <span class="variable">results</span> = [];
         
         <span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number integer">0</span>; <span class="variable">i</span> &<span class="variable">lt</span>; <span class="variable">jobs</span>.<span class="variable">length</span>; <span class="variable">i</span>++) {
             <span class="keyword">var</span> <span class="variable">job</span> = <span class="variable">jobs</span>[<span class="variable">i</span>];
             
-            <span class="keyword">if</span> (<span class="variable">job</span>.<span class="variable">comment</span>().<span class="variable">indexOf</span>(<span class="variable">comment</span>) &<span class="variable">gt</span>;= <span class="number integer">0</span>) {
+            <span class="keyword">if</span> (<span class="variable">job</span>.<span class="variable">comment</span>().<span class="variable">match</span>(<span class="variable">pattern</span>)) {
                 <span class="variable">results</span>.<span class="variable">push</span>(<span class="variable">job</span>);
             }
         }
@@ -482,7 +482,7 @@ var job2 = new CronJob(null, 'ls -l /', 'comment');</code></pre>
 <pre><code><span class="keyword">function</span> <span class="class">CronJob</span>(<span class="variable">line</span>, <span class="variable">c</span>, <span class="variable">m</span>) {
     <span class="keyword">var</span> <span class="variable">self</span>    = <span class="this">this</span>,
         <span class="variable">command</span> = <span class="keyword">null</span>,
-        <span class="variable">meta</span>    = <span class="variable">m</span> || <span class="string">''</span>,
+        <span class="variable">comment</span> = <span class="keyword">null</span>,
         <span class="variable">valid</span>   = <span class="variable">false</span>,
         <span class="variable">slots</span>   = [],
         <span class="variable">special</span> = <span class="variable">false</span>;</code></pre>
@@ -558,8 +558,8 @@ var job2 = new CronJob(null, 'ls -l /', 'comment');</code></pre>
         }
         
         <span class="keyword">var</span> <span class="variable">result</span> = <span class="variable">time</span> + <span class="string">' '</span> + <span class="variable">command</span>.<span class="variable">toString</span>()
-        <span class="keyword">if</span> (<span class="variable">meta</span>) {
-            <span class="variable">result</span> += <span class="string">' #'</span> + <span class="variable">meta</span>;
+        <span class="keyword">if</span> (<span class="variable">comment</span>.<span class="variable">toString</span>() != <span class="string">''</span>) {
+            <span class="variable">result</span> += <span class="string">' #'</span> + <span class="variable">comment</span>.<span class="variable">toString</span>();
         }
         
         <span class="keyword">return</span> <span class="variable">result</span>;
@@ -745,7 +745,7 @@ var job2 = new CronJob(null, 'ls -l /', 'comment');</code></pre>
 </tr>
 <tr class="code">
 <td class="docs">
-<p>CronCommand getter/setter.</p>
+<p>Command getter/setter.</p>
 
 <h2>Examples</h2>
 
@@ -774,7 +774,7 @@ var job2 = new CronJob(null, 'ls -l /', 'comment');</code></pre>
 </tr>
 <tr class="code">
 <td class="docs">
-<p>comment getter/setter.</p>
+<p>Comment getter/setter.</p>
 
 <h2>Examples</h2>
 
@@ -792,12 +792,12 @@ var job2 = new CronJob(null, 'ls -l /', 'comment');</code></pre>
 <ul><li><p><strong>param</strong>: <em>String</em>  <strong>[comment]</strong></p></li><li><p><strong>return</strong>: <em>String</em> </p><p> </p></li></ul>
 </td>
 <td class="code">
-<pre><code><span class="this">this</span>.<span class="variable">comment</span> = <span class="keyword">function</span>(<span class="variable">m</span>) {
-        <span class="keyword">if</span> (<span class="variable">m</span>) {
-            <span class="variable">meta</span> = <span class="variable">m</span>;
+<pre><code><span class="this">this</span>.<span class="variable">comment</span> = <span class="keyword">function</span>(<span class="variable">c</span>) {
+        <span class="keyword">if</span> (<span class="variable">c</span>) {
+            <span class="variable">comment</span> = <span class="keyword">new</span> <span class="class">CronComment</span>(<span class="variable">c</span>.<span class="variable">toString</span>());
         }
         
-        <span class="keyword">return</span> <span class="variable">meta</span>;
+        <span class="keyword">return</span> <span class="variable">comment</span>.<span class="variable">toString</span>();
     }</code></pre>
 </td>
 </tr>
@@ -1234,7 +1234,7 @@ var range2 = new TimeRange(slot, 'jun - sep'); // every summer</code></pre>
 </tr>
 <tr class="code">
 <td class="docs">
-<p>Returns true if the string that was passed occurs somewhere in this command.</p>
+<p>Returns true if the pattern that was passed matches this command.</p>
 
 <h2>Examples</h2>
 
@@ -1243,19 +1243,22 @@ var range2 = new TimeRange(slot, 'jun - sep'); // every summer</code></pre>
 
     var jobs = tab.findCommand('ls -l /');
     for (var i = 0; i &lt; jobs.length; i++) {
-        // false
-        console.log(jobs[i].command().match('pwd'));
+        // true
+        console.log(jobs[i].command().match('ls -l /'));
     }
 });</code></pre>
 
 <h2></h2>
 
-<ul><li><p><strong>param</strong>: <em>String</em>  <strong>line</strong></p></li><li><p><strong>return</strong>: <em>Boolean</em> </p><p> </p></li></ul>
+<ul><li><p><strong>param</strong>: <em>String | RegEx</em>  <strong>pattern</strong></p></li><li><p><strong>return</strong>: <em>Boolean</em> </p><p> </p></li></ul>
 </td>
 <td class="code">
-<pre><code><span class="this">this</span>.<span class="variable">match</span> = <span class="keyword">function</span>(<span class="variable">line</span>) {
-        <span class="keyword">if</span> (<span class="variable">command</span>.<span class="variable">indexOf</span>(<span class="variable">line</span>) &<span class="variable">gt</span>;= <span class="number integer">0</span>) {
+<pre><code><span class="this">this</span>.<span class="variable">match</span> = <span class="keyword">function</span>(<span class="variable">pattern</span>) {
+        <span class="keyword">if</span> ((<span class="variable">pattern</span> <span class="variable">instanceof</span> <span class="class">String</span>) == <span class="variable">true</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">command</span>.<span class="variable">indexOf</span>(<span class="variable">pattern</span>) &<span class="variable">gt</span>;= <span class="number integer">0</span>) {
             <span class="keyword">return</span> <span class="variable">true</span>;
+        }
+        <span class="keyword">if</span> ((<span class="variable">pattern</span> <span class="variable">instanceof</span> <span class="class">RegEx</span>) == <span class="variable">true</span>) {
+            <span class="keyword">return</span> <span class="variable">pattern</span>.<span class="variable">test</span>(<span class="variable">command</span>);
         }
         
         <span class="keyword">return</span> <span class="variable">false</span>;
@@ -1284,6 +1287,84 @@ var range2 = new TimeRange(slot, 'jun - sep'); // every summer</code></pre>
 <td class="code">
 <pre><code><span class="this">this</span>.<span class="variable">toString</span> = <span class="keyword">function</span>() {
         <span class="keyword">return</span> <span class="variable">command</span>;
+    }
+}</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<ul><li><strong>class</strong>: <em>CronComment</em></li></ul>
+
+<p>A JavaScript representation of the inline comment part of a cron job.</p>
+
+<h2>Examples</h2>
+
+<pre><code>var comment = new CronComment('run this on the weekend');</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>String</em>  <strong>line</strong></p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="keyword">function</span> <span class="class">CronComment</span>(<span class="variable">line</span>) {
+    <span class="keyword">var</span> <span class="variable">comment</span> = <span class="variable">line</span>;</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Returns true if the pattern that was passed matches this comment.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findComment('run this on the weekend');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        // true
+        console.log(jobs[i].comment().match('run this on the weekend'));
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>param</strong>: <em>String | RegEx</em>  <strong>pattern</strong></p></li><li><p><strong>return</strong>: <em>Boolean</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">match</span> = <span class="keyword">function</span>(<span class="variable">pattern</span>) {
+        <span class="keyword">if</span> ((<span class="variable">pattern</span> <span class="variable">instanceof</span> <span class="class">String</span>) == <span class="variable">true</span> &<span class="variable">amp</span>;&<span class="variable">amp</span>; <span class="variable">comment</span>.<span class="variable">indexOf</span>(<span class="variable">pattern</span>) &<span class="variable">gt</span>;= <span class="number integer">0</span>) {
+            <span class="keyword">return</span> <span class="variable">true</span>;
+        }
+        <span class="keyword">if</span> ((<span class="variable">pattern</span> <span class="variable">instanceof</span> <span class="class">RegEx</span>) == <span class="variable">true</span>) {
+            <span class="keyword">return</span> <span class="variable">pattern</span>.<span class="variable">test</span>(<span class="variable">comment</span>);
+        }
+        
+        <span class="keyword">return</span> <span class="variable">false</span>;
+    }</code></pre>
+</td>
+</tr>
+<tr class="code">
+<td class="docs">
+<p>Renders the object to a string as it would be written to the system.</p>
+
+<h2>Examples</h2>
+
+<pre><code>new CronTab(function(err, tab) {
+    if (err) { console.log(err); process.exit(1); }
+
+    var jobs = tab.findComment('run this on the weekend');
+    for (var i = 0; i &lt; jobs.length; i++) {
+        console.log(jobs[i].comment().toString());
+    }
+});</code></pre>
+
+<h2></h2>
+
+<ul><li><p><strong>return</strong>: <em>String</em> </p><p> </p></li></ul>
+</td>
+<td class="code">
+<pre><code><span class="this">this</span>.<span class="variable">toString</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="variable">comment</span>;
     }
 }</code></pre>
 </td>

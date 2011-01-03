@@ -344,24 +344,6 @@ var canParseSpecialSyntax = {
         }
     }
 };
-var canParseInlineComments = {
-    'can parse inline comments' : {
-        topic: function() {
-            mockChild.user = 'comments';
-            return loadTabs('');
-        },
-        'should succeed loading':function(err, tab) {
-            Assert.isNull(err);
-            Assert.isObject(tab);
-            Assert.isArray(tab.getJobs());
-            Assert.equal(tab.getJobs().length, 1);
-        },
-        'comment should match':function(err, tab) {
-            var job = tab.getJobs()[0];
-            Assert.equal(job.comment(), 'every business hour');
-        }
-    }
-}
 var canParseCommands = {
     'can parse commands' : {
         topic: function() {
@@ -380,6 +362,76 @@ var canParseCommands = {
         }
     }
 }
+var canParseInlineComments = {
+    'can parse inline comments' : {
+        topic: function() {
+            mockChild.user = 'comments';
+            return loadTabs('');
+        },
+        'should succeed loading':function(err, tab) {
+            Assert.isNull(err);
+            Assert.isObject(tab);
+            Assert.isArray(tab.getJobs());
+            Assert.equal(tab.getJobs().length, 1);
+        },
+        'comment should match':function(err, tab) {
+            var job = tab.getJobs()[0];
+            Assert.equal(job.comment(), 'every business hour');
+        }
+    }
+};
+var canFindJobsByCommand = {
+    'can find jobs by command' : {
+        topic: function() {
+            mockChild.user = 'commands';
+            return loadTabs('');
+        },
+        'should succeed loading':function(err, tab) {
+            Assert.isNull(err);
+            Assert.isObject(tab);
+            Assert.isArray(tab.getJobs());
+            Assert.equal(tab.getJobs().length, 1);
+        },
+        'should find jobs by substring':function(err, tab) {
+            var jobs = tab.findCommand('/usr/bin/env echo');
+            
+            Assert.isArray(jobs);
+            Assert.equal(jobs.length, 1);
+        },
+        'should find jobs by regular expression':function(err, tab) {
+            var jobs = tab.findCommand(/echo/);
+            
+            Assert.isArray(jobs);
+            Assert.equal(jobs.length, 1);
+        }
+    }
+};
+var canFindJobsByComment = {
+    'can find jobs by comment' : {
+        topic: function() {
+            mockChild.user = 'comments';
+            return loadTabs('');
+        },
+        'should succeed loading':function(err, tab) {
+            Assert.isNull(err);
+            Assert.isObject(tab);
+            Assert.isArray(tab.getJobs());
+            Assert.equal(tab.getJobs().length, 1);
+        },
+        'should find jobs by substring':function(err, tab) {
+            var jobs = tab.findComment('every business hour');
+            
+            Assert.isArray(jobs);
+            Assert.equal(jobs.length, 1);
+        },
+        'should find jobs by regular expression':function(err, tab) {
+            var jobs = tab.findComment(/business/);
+            
+            Assert.isArray(jobs);
+            Assert.equal(jobs.length, 1);
+        }
+    }
+};
 
 var Vows    = require('vows'),
     Assert  = require('assert'),
@@ -396,4 +448,6 @@ Vows.describe('crontab').
     addBatch(canParseSpecialSyntax).
     addBatch(canParseCommands).
     addBatch(canParseInlineComments).
+    addBatch(canFindJobsByCommand).
+    addBatch(canFindJobsByComment).
     export(module);
