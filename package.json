@@ -1,14 +1,18 @@
 {
     'name': 'crontab',
     'description': 'A module for reading, manipulating, and writing user crontabs with node.js',
-    'version': '0.2.6',
-    'author': 'Blagovest Dachev <blago@dachev.com>',
     'keywords': ['cron', 'crontab', 'schedule', 'system', 'run', 'process'],
+    'version': '0.2.6',
     'main': './lib/index',
     'dependencies': {},
     'engines': { 'node': '>= 0.2.5' },
+    'author': {
+        'name'  : 'Blagovest Dachev',
+        'email' : 'blago@dachev.com',
+        'url'   : 'http://www.dachev.com'
+    },
     'homepage': 'https://github.com/dachev/node-crontab',
-    'repository' :{
+    'repository' : {
         'type' : 'git'
         'url'  : 'git://github.com/dachev/node-crontab.git'
     }       
