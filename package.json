@@ -2,7 +2,7 @@
     "name": "crontab",
     "description": "A module for reading, manipulating, and writing user crontabs with node.js",
     "keywords": ["cron", "crontab", "schedule", "system", "run", "process"],
-    "version": "0.2.9",
+    "version": "0.2.99",
     "main": "./lib/index",
     "dependencies": {},
     "engines": { "node": ">= 0.2.5" },
@@ -15,5 +15,9 @@
     "repository" : {
         "type" : "git",
         "url"  : "git://github.com/dachev/node-crontab.git"
-    }       
+    },
+    "licenses": [{
+        "type": "GPLv3",
+        "url": "http://www.gnu.org/licenses/gpl-3.0.txt"}
+    ]
 }
