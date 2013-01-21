@@ -1,3 +1,4 @@
+[![build status](https://secure.travis-ci.org/dachev/node-crontab.png)](http://travis-ci.org/dachev/node-crontab)
 
 # node-crontab
       
