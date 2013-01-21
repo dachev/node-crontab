@@ -1,4 +1,4 @@
-[![build status](https://secure.travis-ci.org/dachev/node-crontab.png)](http://travis-ci.org/dachev/node-crontab)
+[![build status](https://secure.travis-ci.org/dachev/node-crontab.png?branch=master)](http://travis-ci.org/dachev/node-crontab)
 
 # node-crontab
       
