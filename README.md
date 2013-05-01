@@ -18,7 +18,7 @@ API [reference](http://dachev.github.com/node-crontab).
     
 The latest revision of node-crontab is compatible with node --version:
 
-    >= 0.2.5
+    >= 0.6.0
 
 ## License
 Copyright 2010, Blagovest Dachev.
