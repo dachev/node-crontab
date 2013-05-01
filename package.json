@@ -5,6 +5,12 @@
     "version": "0.3.2",
     "main": "./lib/index",
     "dependencies": {},
+    "devDependencies": {
+        "vows": "0.7.0"
+    },
+    "scripts": {
+        "test": "test/runner.js"
+    },
     "engines": { "node": ">= 0.6.0" },
     "author": {
         "name"  : "Blagovest Dachev",
