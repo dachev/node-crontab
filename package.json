@@ -11,7 +11,7 @@
     "scripts": {
         "test": "test/runner.js"
     },
-    "engines": { "node": ">= 0.6.0" },
+    "engines": { "node": ">= 0.10.0" },
     "author": {
         "name"  : "Blagovest Dachev",
         "email" : "blago@dachev.com",
