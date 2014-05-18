@@ -76,6 +76,8 @@ function mockChild(command, args) {
 }
 mockChild.user = 'blago';
 mockChild.tabs = {
+  empty   : [],
+  reset   : [],
   alice   : ['0 8-17 * * 1-5 /usr/bin/env echo "check email"',
              '* 19-0,0-3 * * 1-5 /usr/bin/env echo "hack node.js"',
              '30 11 * * 6-0 /usr/bin/env echo "wake up"',
@@ -86,7 +88,6 @@ mockChild.tabs = {
              '30 11 * * 6-0 /usr/bin/env echo "wake up"'],
   blago   : null,
   root    : [],
-  empty   : [],
   remove  : ['0 7 * * 1,2,3,4,5 ls -la # every weekday @7',
              '0 8 * * 1,2,3,4,5 ls -lh # every weekday @8',
              '0 9 * * 1,2,3,4,5 ls -lt # every weekday @9'],
@@ -99,7 +100,7 @@ mockChild.tabs = {
              '@annually /usr/bin/env echo "starting service (annually)"',
              '@midnight /usr/bin/env echo "starting service (midnight)"'],
   comments: ['0 8-17 * * 1-5 /usr/bin/env echo "check email" #every business hour'],
-  commands: ['0 8-17 * * 1-5 /usr/bin/env echo "check email" #every business hour'],
+  commands: ['0 8-17 * * 1-5 /usr/bin/env echo "check email" #every business hour']
 };
 
 
@@ -558,7 +559,7 @@ var canFindJobsByComment = {
   }
 };
 var canSaveCreatedJobs = {
-  'can find jobs' : {
+  'can save jobs' : {
     topic: function() {
       mockChild.user = 'comments';
       return loadTabs('');
@@ -578,6 +579,25 @@ var canSaveCreatedJobs = {
 
         Assert.equal(jobs.length, 2);
       }
+    }
+  }
+};
+var canResetJobs = {
+  'can reset jobs' : {
+    topic: function() {
+      mockChild.user = 'reset';
+      return loadTabs('');
+    },
+    'should succeed reseting':function(err, tab) {
+      Assert.equal(tab.jobs().length, 0);
+
+      tab.create('ls -l', '0 7 * * 1,2,3,4,5', 'test 1');
+      tab.create('ls -l', '0 7 * * 1,2,3,4,5', 'test 2');
+      tab.create('ls -l', '0 7 * * 1,2,3,4,5', 'test 3');
+      Assert.equal(tab.jobs().length, 3);
+
+      tab.reset();
+      Assert.equal(tab.jobs().length, 0);
     }
   }
 };
@@ -603,4 +623,5 @@ Vows.describe('crontab').
   addBatch(canFindJobsByCommand).
   addBatch(canFindJobsByComment).
   addBatch(canSaveCreatedJobs).
+  addBatch(canResetJobs).
   export(module);
