@@ -87,6 +87,9 @@ mockChild.tabs = {
   blago   : null,
   root    : [],
   empty   : [],
+  remove  : ['0 7 * * 1,2,3,4,5 ls -la # every weekday @7',
+             '0 8 * * 1,2,3,4,5 ls -lh # every weekday @8',
+             '0 9 * * 1,2,3,4,5 ls -lt # every weekday @9'],
   special : ['@reboot /usr/bin/env echo "starting service (reboot)" #reboot',
              '@hourly /usr/bin/env echo "starting service (hourly)"',
              '@daily /usr/bin/env echo "starting service (daily)"',
@@ -300,6 +303,35 @@ var canCreateJob = {
       Assert.equal(job.dow().toString(), '*');
       Assert.equal(job.command(), 'ls -l');
       Assert.equal(job.comment(), '');
+    }
+  }
+};
+var canRemoveJob = {
+  'can remove job': {
+    topic: function() {
+      mockChild.user = 'remove';
+
+      return loadTabs('');
+    },
+    'should succeed with job object':function(err, tab) {
+      var count = tab.jobs().length;
+      var job   = tab.jobs({command:'ls -la'})[0];
+
+      tab.remove(job);
+
+      Assert.equal(tab.jobs().length, count-1);
+    },
+    'should succeed with command query':function(err, tab) {
+      var count = tab.jobs().length;
+      tab.remove({command:'ls -lh'});
+
+      Assert.equal(tab.jobs().length, count-1);
+    },
+    'should succeed with comment query':function(err, tab) {
+      var count = tab.jobs().length;
+      tab.remove({comment:'every weekday @9'});
+
+      Assert.equal(tab.jobs().length, count-1);
     }
   }
 };
@@ -563,6 +595,7 @@ Vows.describe('crontab').
   addBatch(userSavesHerOwnNonEmptyCrons).
   addBatch(userLoadsHerOwnNonEmptyCronsAgain).
   addBatch(canCreateJob).
+  addBatch(canRemoveJob).
   addBatch(canParseRawLine).
   addBatch(canParseSpecialSyntax).
   addBatch(canParseCommands).
