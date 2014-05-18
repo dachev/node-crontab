@@ -1,29 +1,42 @@
 {
-    "name": "crontab",
-    "description": "A module for reading, manipulating, and writing user crontabs with node.js",
-    "keywords": ["cron", "crontab", "schedule", "system", "run", "process"],
-    "version": "0.3.4",
-    "main": "./lib/index",
-    "dependencies": {},
-    "devDependencies": {
-        "vows": "0.7.0"
-    },
-    "scripts": {
-        "test": "test/runner.js"
-    },
-    "engines": { "node": ">= 0.10.0" },
-    "author": {
-        "name"  : "Blagovest Dachev",
-        "email" : "blago@dachev.com",
-        "url"   : "http://www.dachev.com"
-    },
-    "homepage": "https://github.com/dachev/node-crontab",
-    "repository" : {
-        "type" : "git",
-        "url"  : "git://github.com/dachev/node-crontab.git"
-    },
-    "licenses": [{
-        "type": "GPLv3",
-        "url": "http://www.gnu.org/licenses/gpl-3.0.txt"}
-    ]
+  "name": "crontab",
+  "description": "A module for reading, manipulating, and writing user crontabs with node.js",
+  "keywords": [
+    "cron",
+    "crontab",
+    "schedule",
+    "system",
+    "run",
+    "process"
+  ],
+  "version": "0.3.4",
+  "main": "./lib/index",
+  "dependencies": {
+    "underscore": "^1.6.0"
+  },
+  "devDependencies": {
+    "vows": "0.7.0"
+  },
+  "scripts": {
+    "test": "test/runner.js"
+  },
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "author": {
+    "name": "Blagovest Dachev",
+    "email": "blago@dachev.com",
+    "url": "http://www.dachev.com"
+  },
+  "homepage": "https://github.com/dachev/node-crontab",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/dachev/node-crontab.git"
+  },
+  "licenses": [
+    {
+      "type": "GPLv3",
+      "url": "http://www.gnu.org/licenses/gpl-3.0.txt"
+    }
+  ]
 }
