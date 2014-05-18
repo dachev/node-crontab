@@ -16,7 +16,7 @@ $ npm install crontab
 ```js
 require('crontab').load(function(err, crontab) {
   // create with string expression
-  var job = crontab.create('ls -la', '0 7 * * 1,2,3,4,5', 'comment 1');
+  var job = crontab.create('ls -la', '0 7 * * 1,2,3,4,5');
 
   // create with Date
   var job = crontab.create('ls -lh', new Date(1400373907766));
