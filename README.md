@@ -1,7 +1,7 @@
 # node-crontab
 [![Build Status](https://secure.travis-ci.org/dachev/node-crontab.png)](http://travis-ci.org/dachev/node-crontab)
 [![Dependencies](https://david-dm.org/dachev/node-crontab.png)](https://david-dm.org/dachev/node-crontab)
-[![NPM version](https://badge.fury.io/js/node-crontab.svg)](http://badge.fury.io/js/node-crontab)
+[![NPM version](https://badge.fury.io/js/crontab.svg)](http://badge.fury.io/js/crontab)
 
 Allows reading, creating, deleting, manipulating, and saving user cronjobs with node.js.
 
