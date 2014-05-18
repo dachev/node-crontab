@@ -12,7 +12,7 @@ $ npm install crontab
 ```
 
 ## Examples
-### Simple
+### Kitchen sink
 ```js
 require('crontab').load(function(err, crontab) {
   // create with string expression
