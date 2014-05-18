@@ -154,8 +154,8 @@ var rootLoadsAnoterUserCrons = {
       
       Assert.isNull(err);
       Assert.isObject(tab);
-      Assert.isArray(tab.getJobs());
-      Assert.equal(tab.getJobs().length, 3);
+      Assert.isArray(tab.jobs());
+      Assert.equal(tab.jobs().length, 3);
     }
   }
 };
@@ -183,8 +183,8 @@ var userLoadsHisOwnEmptyCrons = {
       
       Assert.isNull(err);
       Assert.isObject(tab);
-      Assert.isArray(tab.getJobs());
-      Assert.equal(tab.getJobs().length, 0);
+      Assert.isArray(tab.jobs());
+      Assert.equal(tab.jobs().length, 0);
     }
   }
 };
@@ -199,8 +199,8 @@ var userLoadsHerOwnNonEmptyCrons = {
       
       Assert.isNull(err);
       Assert.isObject(tab);
-      Assert.isArray(tab.getJobs());
-      Assert.equal(tab.getJobs().length, 5);
+      Assert.isArray(tab.jobs());
+      Assert.equal(tab.jobs().length, 5);
     }
   }
 };
@@ -226,8 +226,8 @@ var userLoadsHerOwnNonEmptyCronsAgain = {
       
       Assert.isNull(err);
       Assert.isObject(tab);
-      Assert.isArray(tab.getJobs());
-      Assert.equal(tab.getJobs().length, 5);
+      Assert.isArray(tab.jobs());
+      Assert.equal(tab.jobs().length, 5);
     },
     'are the same':function(err, tab) {
       Assert.equal(tab.render().trim(), mockChild.tabs.alice.join('\n').trim());
@@ -332,8 +332,8 @@ var canParseSpecialSyntax = {
     'should succeed loading':function(err, tab) {
       Assert.isNull(err);
       Assert.isObject(tab);
-      Assert.isArray(tab.getJobs());
-      Assert.equal(tab.getJobs().length, 8);
+      Assert.isArray(tab.jobs());
+      Assert.equal(tab.jobs().length, 8);
     },
     '@reboot':function(err, tab) {
       var jobs = tab.findCommand('reboot');
@@ -446,11 +446,11 @@ var canParseCommands = {
     'should succeed loading':function(err, tab) {
       Assert.isNull(err);
       Assert.isObject(tab);
-      Assert.isArray(tab.getJobs());
-      Assert.equal(tab.getJobs().length, 1);
+      Assert.isArray(tab.jobs());
+      Assert.equal(tab.jobs().length, 1);
     },
     'command should match':function(err, tab) {
-      var job = tab.getJobs()[0];
+      var job = tab.jobs()[0];
       Assert.equal(job.command(), '/usr/bin/env echo "check email"');
     }
   }
@@ -464,11 +464,11 @@ var canParseInlineComments = {
     'should succeed loading':function(err, tab) {
       Assert.isNull(err);
       Assert.isObject(tab);
-      Assert.isArray(tab.getJobs());
-      Assert.equal(tab.getJobs().length, 1);
+      Assert.isArray(tab.jobs());
+      Assert.equal(tab.jobs().length, 1);
     },
     'comment should match':function(err, tab) {
-      var job = tab.getJobs()[0];
+      var job = tab.jobs()[0];
       Assert.equal(job.comment(), 'every business hour');
     }
   }
@@ -482,8 +482,8 @@ var canFindJobsByCommand = {
       'should succeed loading':function(err, tab) {
         Assert.isNull(err);
         Assert.isObject(tab);
-        Assert.isArray(tab.getJobs());
-        Assert.equal(tab.getJobs().length, 1);
+        Assert.isArray(tab.jobs());
+        Assert.equal(tab.jobs().length, 1);
       },
       'should find jobs by substring':function(err, tab) {
         var jobs = tab.findCommand('/usr/bin/env echo');
@@ -508,8 +508,8 @@ var canFindJobsByComment = {
     'should succeed loading':function(err, tab) {
       Assert.isNull(err);
       Assert.isObject(tab);
-      Assert.isArray(tab.getJobs());
-      Assert.equal(tab.getJobs().length, 1);
+      Assert.isArray(tab.jobs());
+      Assert.equal(tab.jobs().length, 1);
     },
     'should find jobs by substring':function(err, tab) {
       var jobs = tab.findComment('every business hour');
