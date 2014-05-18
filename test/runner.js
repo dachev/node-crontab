@@ -336,7 +336,7 @@ var canParseSpecialSyntax = {
       Assert.equal(tab.jobs().length, 8);
     },
     '@reboot':function(err, tab) {
-      var jobs = tab.findCommand('reboot');
+      var jobs = tab.jobs({command:'reboot'});
       var job  = jobs[0];
       
       Assert.isArray(jobs);
@@ -345,7 +345,7 @@ var canParseSpecialSyntax = {
       Assert.equal(job.comment(), 'reboot');
     },
     '@hourly':function(tab) {
-      var jobs = tab.findCommand('hourly');
+      var jobs = tab.jobs({command:'hourly'});
       var job  = jobs[0];
       
       Assert.isArray(jobs);
@@ -358,7 +358,7 @@ var canParseSpecialSyntax = {
       Assert.equal(job.dow().toString(), '*');
     },
     '@daily':function(tab) {
-      var jobs = tab.findCommand('daily');
+      var jobs = tab.jobs({command:'daily'});
       var job  = jobs[0];
       
       Assert.isArray(jobs);
@@ -371,7 +371,7 @@ var canParseSpecialSyntax = {
       Assert.equal(job.dow().toString(), '*');
     },
     '@weekly':function(tab) {
-      var jobs = tab.findCommand('weekly');
+      var jobs = tab.jobs({command:'weekly'});
       var job  = jobs[0];
       
       Assert.isArray(jobs);
@@ -384,7 +384,7 @@ var canParseSpecialSyntax = {
       Assert.equal(job.dow().toString(), '0');
     },
     '@monthly':function(tab) {
-      var jobs = tab.findCommand('monthly');
+      var jobs = tab.jobs({command:'monthly'});
       var job  = jobs[0];
       
       Assert.isArray(jobs);
@@ -397,7 +397,7 @@ var canParseSpecialSyntax = {
       Assert.equal(job.dow().toString(), '*');
     },
     '@yearly':function(tab) {
-      var jobs = tab.findCommand('yearly');
+      var jobs = tab.jobs({command:'yearly'});
       var job  = jobs[0];
       
       Assert.isArray(jobs);
@@ -410,7 +410,7 @@ var canParseSpecialSyntax = {
       Assert.equal(job.dow().toString(), '*');
     },
     '@annually':function(tab) {
-      var jobs = tab.findCommand('yearly');
+      var jobs = tab.jobs({command:'yearly'});
       var job  = jobs[0];
       
       Assert.isArray(jobs);
@@ -423,7 +423,7 @@ var canParseSpecialSyntax = {
       Assert.equal(job.dow().toString(), '*');
     },
     '@midnight':function(tab) {
-      var jobs = tab.findCommand('midnight');
+      var jobs = tab.jobs({command:'midnight'});
       var job  = jobs[0];
       
       Assert.isArray(jobs);
@@ -486,13 +486,13 @@ var canFindJobsByCommand = {
         Assert.equal(tab.jobs().length, 1);
       },
       'should find jobs by substring':function(err, tab) {
-        var jobs = tab.findCommand('/usr/bin/env echo');
+        var jobs = tab.jobs({command:'/usr/bin/env echo'});
         
         Assert.isArray(jobs);
         Assert.equal(jobs.length, 1);
       },
       'should find jobs by regular expression':function(err, tab) {
-        var jobs = tab.findCommand(/echo/);
+        var jobs = tab.jobs({command:/echo/});
         
         Assert.isArray(jobs);
         Assert.equal(jobs.length, 1);
@@ -512,13 +512,13 @@ var canFindJobsByComment = {
       Assert.equal(tab.jobs().length, 1);
     },
     'should find jobs by substring':function(err, tab) {
-      var jobs = tab.findComment('every business hour');
+      var jobs = tab.jobs({comment:'every business hour'});
       
       Assert.isArray(jobs);
       Assert.equal(jobs.length, 1);
     },
     'should find jobs by regular expression':function(err, tab) {
-      var jobs = tab.findComment(/business/);
+      var jobs = tab.jobs({comment:/business/});
       
       Assert.isArray(jobs);
       Assert.equal(jobs.length, 1);
