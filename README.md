@@ -1,6 +1,6 @@
-[![build status](https://secure.travis-ci.org/dachev/node-crontab.png?branch=master)](http://travis-ci.org/dachev/node-crontab)
-
 # node-crontab
+[![Build Status](https://secure.travis-ci.org/dachev/node-crontab.png)](http://travis-ci.org/dachev/node-crontab.png)
+[![Dependencies](https://david-dm.org/dachev/node-crontab.png)](https://david-dm.org/dachev/node-crontab.png)
       
 Allows reading, manipulating, and writing user crontabs with [node.js](http://nodejs.org).
 
