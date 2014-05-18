@@ -5,7 +5,10 @@
 Allows reading, manipulating, and writing user crontabs with [node.js](http://nodejs.org).
 
 ## Installation
-    $ npm install crontab
+
+```bash
+$ npm install crontab
+```
 
 ## Examples
 ### Simple
