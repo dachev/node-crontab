@@ -9,7 +9,7 @@
     "run",
     "process"
   ],
-  "version": "0.3.4",
+  "version": "1.0.0",
   "main": "./lib/index",
   "dependencies": {
     "underscore": "^1.6.0"
