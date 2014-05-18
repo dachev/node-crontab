@@ -86,6 +86,7 @@ mockChild.tabs = {
              '30 11 * * 6-0 /usr/bin/env echo "wake up"'],
   blago   : null,
   root    : [],
+  empty   : [],
   special : ['@reboot /usr/bin/env echo "starting service (reboot)" #reboot',
              '@hourly /usr/bin/env echo "starting service (hourly)"',
              '@daily /usr/bin/env echo "starting service (daily)"',
@@ -233,6 +234,95 @@ var userLoadsHerOwnNonEmptyCronsAgain = {
     }
   }
 };
+var canCreateJob = {
+  'can create job': {
+    topic: function() {
+      mockChild.user = 'empty';
+
+      return loadTabs('');
+    },
+    'should succeed with string expression and comment':function(err, tab) {
+      var job = tab.create('ls -l', '0 7 * * 1,2,3,4,5', 'test');
+
+      Assert.isTrue(job.isValid());
+      Assert.equal(job.minute().toString(), '0');
+      Assert.equal(job.hour().toString(), '7');
+      Assert.equal(job.dom().toString(), '*');
+      Assert.equal(job.month().toString(), '*');
+      Assert.equal(job.dow().toString(), '1,2,3,4,5');
+      Assert.equal(job.command(), 'ls -l');
+      Assert.equal(job.comment(), 'test');
+    },
+    'should succeed with date and comment':function(err, tab) {
+      var job = tab.create('ls -l', new Date(1400373907766), 'test');
+
+      Assert.isTrue(job.isValid());
+      Assert.equal(job.minute().toString(), '45');
+      Assert.equal(job.hour().toString(), '19');
+      Assert.equal(job.dom().toString(), '17');
+      Assert.equal(job.month().toString(), '5');
+      Assert.equal(job.dow().toString(), '*');
+      Assert.equal(job.command(), 'ls -l');
+      Assert.equal(job.comment(), 'test');
+    },
+    'should succeed with date and no comment':function(err, tab) {
+      var job = tab.create('ls -l', new Date(1400373907766));
+
+      Assert.isTrue(job.isValid());
+      Assert.equal(job.minute().toString(), '45');
+      Assert.equal(job.hour().toString(), '19');
+      Assert.equal(job.dom().toString(), '17');
+      Assert.equal(job.month().toString(), '5');
+      Assert.equal(job.dow().toString(), '*');
+      Assert.equal(job.command(), 'ls -l');
+      Assert.equal(job.comment(), '');
+    },
+    'should succeed with no date and comment':function(err, tab) {
+      var job = tab.create('ls -l', null, 'test');
+
+      Assert.isTrue(job.isValid());
+      Assert.equal(job.minute().toString(), '*');
+      Assert.equal(job.hour().toString(), '*');
+      Assert.equal(job.dom().toString(), '*');
+      Assert.equal(job.month().toString(), '*');
+      Assert.equal(job.dow().toString(), '*');
+      Assert.equal(job.command(), 'ls -l');
+      Assert.equal(job.comment(), 'test');
+    },
+    'should succeed with no date and no comment':function(err, tab) {
+      var job = tab.create('ls -l', null, null);
+
+      Assert.isTrue(job.isValid());
+      Assert.equal(job.minute().toString(), '*');
+      Assert.equal(job.hour().toString(), '*');
+      Assert.equal(job.dom().toString(), '*');
+      Assert.equal(job.month().toString(), '*');
+      Assert.equal(job.dow().toString(), '*');
+      Assert.equal(job.command(), 'ls -l');
+      Assert.equal(job.comment(), '');
+    }
+  }
+};
+var canParseRawLine = {
+  'can parse raw line': {
+    topic: function() {
+      mockChild.user = 'special';
+      return loadTabs('');
+    },
+    'should succeed parsing raw line':function(err, tab) {
+      var job = tab.parse('0 7 * * 1,2,3,4,5 ls -l #test');
+
+      Assert.isTrue(job.isValid());
+      Assert.equal(job.minute().toString(), '0');
+      Assert.equal(job.hour().toString(), '7');
+      Assert.equal(job.dom().toString(), '*');
+      Assert.equal(job.month().toString(), '*');
+      Assert.equal(job.dow().toString(), '1,2,3,4,5');
+      Assert.equal(job.command(), 'ls -l');
+      Assert.equal(job.comment(), 'test');
+    }
+  }
+}
 var canParseSpecialSyntax = {
   'can parse special cron syntax': {
     topic: function() {
@@ -448,6 +538,8 @@ Vows.describe('crontab').
   addBatch(userLoadsHerOwnNonEmptyCrons).
   addBatch(userSavesHerOwnNonEmptyCrons).
   addBatch(userLoadsHerOwnNonEmptyCronsAgain).
+  addBatch(canCreateJob).
+  addBatch(canParseRawLine).
   addBatch(canParseSpecialSyntax).
   addBatch(canParseCommands).
   addBatch(canParseInlineComments).
