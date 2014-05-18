@@ -525,6 +525,30 @@ var canFindJobsByComment = {
     }
   }
 };
+var canSaveCreatedJobs = {
+  'can find jobs' : {
+    topic: function() {
+      mockChild.user = 'comments';
+      return loadTabs('');
+    },
+    'should succeed loading':function(err, tab) {
+      var jobs = tab.jobs();
+
+      Assert.equal(jobs.length, 1);
+    },
+    'after a successful load': {
+      topic: function(tab) {
+        tab.create('ls -l', '0 7 * * 1,2,3,4,5', 'test');
+        return saveTabs(tab);
+      },
+      'should succeed saving':function(err, tab) {
+        var jobs = tab.jobs();
+
+        Assert.equal(jobs.length, 2);
+      }
+    }
+  }
+};
 
 var Vows    = require('vows');
 var Assert  = require('assert');
@@ -545,4 +569,5 @@ Vows.describe('crontab').
   addBatch(canParseInlineComments).
   addBatch(canFindJobsByCommand).
   addBatch(canFindJobsByComment).
+  addBatch(canSaveCreatedJobs).
   export(module);
