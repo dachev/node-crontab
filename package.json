@@ -1,6 +1,6 @@
 {
   "name": "crontab",
-  "description": "A module for reading, manipulating, and writing user crontabs with node.js",
+  "description": "A module for reading, creating, deleting, manipulating, and saving system cronjobs with node.js",
   "keywords": [
     "cron",
     "crontab",
@@ -9,7 +9,7 @@
     "run",
     "process"
   ],
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "./lib/index",
   "dependencies": {
     "underscore": "^1.6.0"
@@ -35,8 +35,8 @@
   },
   "licenses": [
     {
-      "type": "GPLv3",
-      "url": "http://www.gnu.org/licenses/gpl-3.0.txt"
+      "type": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
     }
   ]
 }
