@@ -250,25 +250,27 @@ var canCreateJob = {
       Assert.equal(job.comment(), 'test');
     },
     'should succeed with date and comment':function(err, tab) {
-      var job = tab.create('ls -l', new Date(1400373907766), 'test');
+      var date = new Date(1400373907766);
+      var job  = tab.create('ls -l', date, 'test');
 
       Assert.isTrue(job.isValid());
-      Assert.equal(job.minute().toString(), '45');
-      Assert.equal(job.hour().toString(), '19');
-      Assert.equal(job.dom().toString(), '17');
-      Assert.equal(job.month().toString(), '5');
+      Assert.equal(job.minute(), date.getMinutes());
+      Assert.equal(job.hour(), date.getHours());
+      Assert.equal(job.dom(), date.getDate());
+      Assert.equal(job.month(), date.getMonth()+1);
       Assert.equal(job.dow().toString(), '*');
       Assert.equal(job.command(), 'ls -l');
       Assert.equal(job.comment(), 'test');
     },
     'should succeed with date and no comment':function(err, tab) {
-      var job = tab.create('ls -l', new Date(1400373907766));
+      var date = new Date(1400373907766);
+      var job = tab.create('ls -l', date);
 
       Assert.isTrue(job.isValid());
-      Assert.equal(job.minute().toString(), '45');
-      Assert.equal(job.hour().toString(), '19');
-      Assert.equal(job.dom().toString(), '17');
-      Assert.equal(job.month().toString(), '5');
+      Assert.equal(job.minute(), date.getMinutes());
+      Assert.equal(job.hour(), date.getHours());
+      Assert.equal(job.dom(), date.getDate());
+      Assert.equal(job.month(), date.getMonth()+1);
       Assert.equal(job.dow().toString(), '*');
       Assert.equal(job.command(), 'ls -l');
       Assert.equal(job.comment(), '');
