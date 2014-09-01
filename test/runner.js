@@ -6,17 +6,9 @@ require('child_process').spawn = mockChild;
 function mockChild(command, args) {
   var undefined;
   var action = (args.indexOf('-l') >= 0) ? 'load' : 'save';
-  var user   = '';
   var uRegEx = /-u\s([^\s]+)/;
-  
-  for (var i = 0; i < args.length; i++) {
-    var arg    = args[i];
-    var tokens = arg.match(uRegEx);
-    
-    user = tokens && tokens[1] || '';
-    
-    if (user) { break; }
-  };
+  var tokens = args.join(' ').match(uRegEx);
+  var user   = tokens && tokens[1] || '';
   
   function load(child) {
     process.nextTick(function() {
