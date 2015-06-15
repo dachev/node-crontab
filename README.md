@@ -115,6 +115,15 @@ require('crontab').load(function(err, crontab) {
 });
 ```
 
+### Sudoers
+
+If a user is specified, it is guaranteed that crontab will place the user argument first.
+This allows you to easily manage your sudoers file while using crontab.
+
+```sudoers
+MYUSER MYHOST=(root) crontab -u $user
+```
+
 ## Copyright
 Copyright 2010-2014, Blagovest Dachev.
 
