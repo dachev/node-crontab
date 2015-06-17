@@ -161,7 +161,12 @@ var rootLoadsAnoterUserCrons = {
 var sudoLoadsAnoterUserCrons = {
   'sudo user loads another (existing) user\'s crons': {
     topic: function() {
-      return loadTabs({user:'bob',sudo:true});
+      return loadTabs({
+        user:'bob',
+        spawn: function (cmd, argv, opt) {
+          return mockChild('sudo', ['--', cmd].concat(argv), opt);
+        }
+      });
     },
     'should succeed loading':function(err, tab) {
       sudoLoadsAnoterUserCrons.tab = tab;
