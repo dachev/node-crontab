@@ -9,6 +9,9 @@ function mockChild(command, args) {
   var uRegEx = /-u\s([^\s]+)/;
   var tokens = args.join(' ').match(uRegEx);
   var user   = tokens && tokens[1] || '';
+  if (command === 'sudo') {
+    mockChild.user = 'root';
+  }
   
   function load(child) {
     process.nextTick(function() {
@@ -147,6 +150,26 @@ var rootLoadsAnoterUserCrons = {
     },
     'should succeed loading':function(err, tab) {
       rootLoadsAnoterUserCrons.tab = tab;
+      
+      Assert.isNull(err);
+      Assert.isObject(tab);
+      Assert.isArray(tab.jobs());
+      Assert.equal(tab.jobs().length, 3);
+    }
+  }
+};
+var sudoLoadsAnoterUserCrons = {
+  'sudo user loads another (existing) user\'s crons': {
+    topic: function() {
+      return loadTabs({
+        user:'bob',
+        spawn: function (cmd, argv, opt) {
+          return mockChild('sudo', ['--', cmd].concat(argv), opt);
+        }
+      });
+    },
+    'should succeed loading':function(err, tab) {
+      sudoLoadsAnoterUserCrons.tab = tab;
       
       Assert.isNull(err);
       Assert.isObject(tab);
@@ -603,6 +626,7 @@ var CronTab = require('../lib/index');
 Vows.describe('crontab').
   addBatch(nonRootLoadsAnoterUserCrons).
   addBatch(rootLoadsAnoterUserCrons).
+  addBatch(sudoLoadsAnoterUserCrons).
   addBatch(rootLoadsAnoterNonExistingUserCrons).
   addBatch(userLoadsHisOwnEmptyCrons).
   addBatch(userLoadsHerOwnNonEmptyCrons).
