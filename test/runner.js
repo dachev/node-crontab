@@ -4,12 +4,6 @@ require('child_process').spawn = mockChild;
 
 // Mock child_process
 function mockChild(command, args) {
-  if (!!~args.indexOf('-') && process.platform == 'sunos') {
-    child.stderr.emit('data', 'crontab: sunos\' flavor of crontab does not recognize -');
-    child.emit('close', 1);
-    return;
-  }
-
   var undefined;
   var action = (args.indexOf('-l') >= 0) ? 'load' : 'save';
   var uRegEx = /-u\s([^\s]+)/;
@@ -18,8 +12,21 @@ function mockChild(command, args) {
   
   function load(child) {
     process.nextTick(function() {
-      if (mockChild.user != 'root' && user != '') {
+      // run for another user = user option will be first
+      if (user.length > 0 && args[0] != '-u') {
+        child.stderr.emit('data', 'crontab: if running for another user the -u option must come first');
+        child.emit('close', 1);
+        return; 
+      }
+      // run for another user + not root = sudo
+      if (user.length > 0 && mockChild.user != 'root' && !!~command.indexOf('sudo') == false) {
         child.stderr.emit('data', 'crontab: must be privileged to use -u');
+        child.emit('close', 1);
+        return;
+      }
+      //  run for another user + root = no sudo
+      if (user.length > 0 && mockChild.user == 'root' && !!~command.indexOf('sudo') == true) {
+        child.stderr.emit('data', 'crontab: must not use sudo if already root and using -u');
         child.emit('close', 1);
         return;
       }
@@ -43,14 +50,33 @@ function mockChild(command, args) {
   
   function save(child, newTabs) {
     process.nextTick(function() {
-      if (mockChild.user != 'root' && user != '') {
+      // run for another user = user option will be first
+      if (user.length > 0 && args[0] != '-u') {
+        child.stderr.emit('data', 'crontab: if running for another user the -u option must come first');
+        child.emit('close', 1);
+        return; 
+      }
+      // run for another user + not root = sudo
+      if (user.length > 0 && mockChild.user != 'root' && !!~command.indexOf('sudo') == false) {
         child.stderr.emit('data', 'crontab: must be privileged to use -u');
-        child.emit('close', 1); 
+        child.emit('close', 1);
+        return; 
       }
-      else {
-        mockChild.tabs[user || mockChild.user] = newTabs.split('\n');
-        child.emit('close', 0);
+      //  run for another user + root = no sudo
+      if (user.length > 0 && mockChild.user == 'root' && !!~command.indexOf('sudo') == true) {
+        child.stderr.emit('data', 'crontab: must not use sudo if already root and using -u');
+        child.emit('close', 1);
+        return;
       }
+      // save + sunos = no "-"" argument
+      if (!!~args.indexOf('-') && process.platform == 'sunos') {
+        child.stderr.emit('data', 'crontab: sunos\' flavor of crontab does not recognize -');
+        child.emit('close', 1);
+        return;
+      }
+
+      mockChild.tabs[user || mockChild.user] = newTabs.split('\n');
+      child.emit('close', 0);
     });
   }
   
@@ -136,12 +162,15 @@ var nonRootLoadsAnotherUserCrons = {
   'non-root user loads another user\'s crons': {
     topic: function() {
       mockChild.user = 'blago';
-      return loadTabs('alice');
+      return loadTabs('bob');
     },
-    'should fail loading':function(err, tab) {
-      Assert.isObject(err);
-      Assert.isString(err.message);
-      Assert.matches(err.message, /privileged/);
+    'should succeed loading because we use sudo':function(err, tab) {
+      nonRootLoadsAnotherUserCrons.tab = tab;
+      
+      Assert.isNull(err);
+      Assert.isObject(tab);
+      Assert.isArray(tab.jobs());
+      Assert.equal(tab.jobs().length, 3);
     }
   }
 };
@@ -149,7 +178,15 @@ var rootLoadsAnotherUserCrons = {
   'root user loads another (existing) user\'s crons': {
     topic: function() {
       mockChild.user = 'root';
-      return loadTabs('bob');
+      var originalGetuid = process.getuid;
+      process.getuid = function() {
+        return 0;
+      }
+
+      var tabs = loadTabs('bob');
+      process.getuid = originalGetuid;
+
+      return tabs;
     },
     'should succeed loading':function(err, tab) {
       rootLoadsAnotherUserCrons.tab = tab;
@@ -165,7 +202,15 @@ var rootLoadsAnotherNonExistingUserCrons = {
   'root user loads another (non-existing) user\'s crons': {
     topic: function() {
       mockChild.user = 'root';
-      return loadTabs('tom');
+      var originalGetuid = process.getuid;
+      process.getuid = function() {
+        return 0;
+      }
+
+      var tabs = loadTabs('tom');
+      process.getuid = originalGetuid;
+
+      return tabs;
     },
     'should fail loading':function(err, tab) {
       Assert.isObject(err);
