@@ -134,7 +134,7 @@ function makeTabArrayFromTopicStack() {
 
 
 // Test batches
-var nonRootLoadsAnoterUserCrons = {
+var nonRootLoadsAnotherUserCrons = {
   'non-root user loads another user\'s crons': {
     topic: function() {
       mockChild.user = 'blago';
@@ -147,14 +147,14 @@ var nonRootLoadsAnoterUserCrons = {
     }
   }
 };
-var rootLoadsAnoterUserCrons = {
+var rootLoadsAnotherUserCrons = {
   'root user loads another (existing) user\'s crons': {
     topic: function() {
       mockChild.user = 'root';
       return loadTabs('bob');
     },
     'should succeed loading':function(err, tab) {
-      rootLoadsAnoterUserCrons.tab = tab;
+      rootLoadsAnotherUserCrons.tab = tab;
       
       Assert.isNull(err);
       Assert.isObject(tab);
@@ -163,7 +163,7 @@ var rootLoadsAnoterUserCrons = {
     }
   }
 };
-var rootLoadsAnoterNonExistingUserCrons = {
+var rootLoadsAnotherNonExistingUserCrons = {
   'root user loads another (non-existing) user\'s crons': {
     topic: function() {
       mockChild.user = 'root';
@@ -614,7 +614,7 @@ var willWorkOnManyPlatforms = {
     },
     'should succeed saving in sunos':function(err, tab) {
       process.platform = process.originalPlatform;
-      
+
       Assert.isNull(err);
       Assert.isObject(tab);
       Assert.isArray(tab.jobs());
@@ -627,9 +627,9 @@ var Assert  = require('assert');
 var CronTab = require('../lib/index');
 
 Vows.describe('crontab').
-  addBatch(nonRootLoadsAnoterUserCrons).
-  addBatch(rootLoadsAnoterUserCrons).
-  addBatch(rootLoadsAnoterNonExistingUserCrons).
+  addBatch(nonRootLoadsAnotherUserCrons).
+  addBatch(rootLoadsAnotherUserCrons).
+  addBatch(rootLoadsAnotherNonExistingUserCrons).
   addBatch(userLoadsHisOwnEmptyCrons).
   addBatch(userLoadsHerOwnNonEmptyCrons).
   addBatch(userSavesHerOwnNonEmptyCrons).
