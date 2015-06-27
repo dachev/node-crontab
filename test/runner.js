@@ -4,6 +4,14 @@ require('child_process').spawn = mockChild;
 
 // Mock child_process
 function mockChild(command, args) {
+  console.log(process.platform);
+  console.log(command, args);
+  if (!!~args.indexOf('-') && process.platform == 'sunos') {
+    child.stderr.emit('data', 'crontab: sunos\' flavor of crontab does not recognize -');
+    child.emit('close', 1);
+    return;
+  }
+
   var undefined;
   var action = (args.indexOf('-l') >= 0) ? 'load' : 'save';
   var uRegEx = /-u\s([^\s]+)/;
@@ -596,6 +604,24 @@ var canResetJobs = {
   }
 };
 
+var willWorkOnManyPlatforms = {
+  'can save in sunos' : {
+    topic: function() {
+      process.originalPlatform = process.platform;
+      process.platform = 'sunos';
+      
+      return saveTabs(userLoadsHerOwnNonEmptyCrons.tab);
+    },
+    'should succeed saving in sunos':function(err, tab) {
+      process.platform = process.originalPlatform;
+      
+      Assert.isNull(err);
+      Assert.isObject(tab);
+      Assert.isArray(tab.jobs());
+    }
+  }
+};
+
 var Vows    = require('vows');
 var Assert  = require('assert');
 var CronTab = require('../lib/index');
@@ -618,4 +644,5 @@ Vows.describe('crontab').
   addBatch(canFindJobsByComment).
   addBatch(canSaveCreatedJobs).
   addBatch(canResetJobs).
+  addBatch(willWorkOnManyPlatforms).
   export(module);
