@@ -4,8 +4,6 @@ require('child_process').spawn = mockChild;
 
 // Mock child_process
 function mockChild(command, args) {
-  console.log(process.platform);
-  console.log(command, args);
   if (!!~args.indexOf('-') && process.platform == 'sunos') {
     child.stderr.emit('data', 'crontab: sunos\' flavor of crontab does not recognize -');
     child.emit('close', 1);
