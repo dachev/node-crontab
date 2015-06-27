@@ -115,6 +115,21 @@ require('crontab').load(function(err, crontab) {
 });
 ```
 
+### Specific user
+```js
+// when executing for another user the library uses sudo, unless the
+// current process runs as root
+require('crontab').load('alice', function(err, crontab) {
+  if (err) {
+    return console.error(err);
+  }
+
+  crontab.save(function(err, crontab) {
+    console.log(err)
+  });
+});
+```
+
 ## Copyright
 Copyright 2010-2014, Blagovest Dachev.
 
