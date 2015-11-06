@@ -288,6 +288,11 @@ var canCreateJob = {
 
       return loadTabs('');
     },
+    'should error with invalid cron syntax':function(err, tab) {
+      Assert.throws(function() {
+        var job = tab.create('ls -l', 'blah', 'test');
+      }, Error);
+    },
     'should succeed with string expression and comment':function(err, tab) {
       var job = tab.create('ls -l', '0 7 * * 1,2,3,4,5', 'test');
 
