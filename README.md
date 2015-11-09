@@ -27,6 +27,12 @@ require('crontab').load(function(err, crontab) {
   // create special: @reboot, @hourly, @daily, @weekly, @monthly, @yearly, @annually, @midnight
   var job = crontab.create('ls -la', '@reboot');
 
+  // check valid
+  var job = crontab.create();
+  if (job == null) {
+    console.log('failed to create job');
+  }
+
   // remove object
   var job = crontab.create('ls -lr', '0 7 * * 1,2,3,4,5', 'comment 3');
   crontab.remove(job);
