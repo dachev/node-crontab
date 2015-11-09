@@ -290,6 +290,7 @@ var canCreateJob = {
     },
     'should return null with invalid cron syntax':function(err, tab) {
       Assert.equal(tab.create('<command to execute', '<when to execute', '<comment>'), null);
+      Assert.equal(tab.create('ls -l', ''), null);
       Assert.equal(tab.create(), null);
       Assert.equal(tab.create(null), null);
       Assert.equal(tab.create(null, null, null), null);
