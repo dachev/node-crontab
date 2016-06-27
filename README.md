@@ -137,10 +137,10 @@ require('crontab').load('alice', function(err, crontab) {
 ```
 
 ## Copyright
-Copyright 2010-2014, Blagovest Dachev.
+Copyright Martin Owens.
 
 ## Credits
 This is a JavaScript port of a Python package by Martin Owens
 
 ## License
-MIT
+GPL3
