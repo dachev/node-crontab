@@ -136,8 +136,11 @@ require('crontab').load('alice', function(err, crontab) {
 });
 ```
 
+## Author
+Blagovest Dachev
+
 ## Copyright
-Copyright Martin Owens.
+Blagovest Dachev (2010-2014), Martin Owens (2009-2012)
 
 ## Credits
 This is a JavaScript port of a Python package by Martin Owens
