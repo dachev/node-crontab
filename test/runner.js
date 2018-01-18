@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 require('child_process').spawn = mockChild;
+var EventEmitter = require('events');
+var _ = require('underscore');
 
 // Mock child_process
 function mockChild(command, args) {
@@ -80,9 +82,9 @@ function mockChild(command, args) {
     });
   }
   
-  var child = new process.EventEmitter;
-  child.stdout = new process.EventEmitter;
-  child.stderr = new process.EventEmitter;
+  var child = new EventEmitter;
+  child.stdout = new EventEmitter;
+  child.stderr = new EventEmitter;
   child.stdin  = {
     buffer : '',
     write  : function(tabs) { this.buffer = tabs; },
@@ -124,13 +126,16 @@ mockChild.tabs = {
              '@annually /usr/bin/env echo "starting service (annually)"',
              '@midnight /usr/bin/env echo "starting service (midnight)"'],
   comments: ['0 8-17 * * 1-5 /usr/bin/env echo "check email" #every business hour'],
-  commands: ['0 8-17 * * 1-5 /usr/bin/env echo "check email" #every business hour']
+  commands: ['0 8-17 * * 1-5 /usr/bin/env echo "check email" #every business hour'],
+  env: ['FOO=bar',
+        'BAZ=1',
+        '* * * * * /usr/bin/true']
 };
 
 
 // Test helpers
 function loadTabs(user) {
-  var promise = new(process.EventEmitter);
+  var promise = new(EventEmitter);
   
   CronTab.load(user, function(err, tab) {
     if (err) { promise.emit('error', err); }
@@ -140,7 +145,7 @@ function loadTabs(user) {
   return promise;
 }
 function saveTabs(tab) {
-  var promise = new(process.EventEmitter);
+  var promise = new(EventEmitter);
   
   tab.save(function(err, tab) {
     if (err) { promise.emit('error', err); }
@@ -610,6 +615,26 @@ var canFindJobsByComment = {
     }
   }
 };
+var canLoadEnvironment = {
+  'can load environment variables' : {
+    topic: function() {
+      mockChild.user = 'env';
+      return loadTabs('');
+    },
+    'should succeed loading':function(err, tab) {
+      Assert.isNull(err);
+      Assert.isObject(tab);
+      Assert.isArray(tab.jobs());
+      Assert.equal(tab.jobs().length, 1);
+    },
+    'should load environment variables':function(err, tab) {
+      Assert.isObject(tab.env);
+      Assert.equal(_.keys(tab.env).length, 2);
+      Assert.equal(tab.env.FOO, 'bar');
+      Assert.equal(tab.env.BAZ, '1');
+    }
+  }
+};
 var canSaveCreatedJobs = {
   'can save jobs' : {
     topic: function() {
@@ -648,8 +673,14 @@ var canResetJobs = {
       tab.create('ls -l', '0 7 * * 1,2,3,4,5', 'test 3');
       Assert.equal(tab.jobs().length, 3);
 
+      Assert.equal(_.keys(tab.env).length, 0);
+      tab.env.FOO = 'foo';
+      tab.env.BAR = '1';
+      Assert.equal(_.keys(tab.env).length, 2);
+
       tab.reset();
       Assert.equal(tab.jobs().length, 0);
+      Assert.equal(_.keys(tab.env).length, 0);
     }
   }
 };
@@ -692,6 +723,7 @@ Vows.describe('crontab').
   addBatch(canParseInlineComments).
   addBatch(canFindJobsByCommand).
   addBatch(canFindJobsByComment).
+  addBatch(canLoadEnvironment).
   addBatch(canSaveCreatedJobs).
   addBatch(canResetJobs).
   addBatch(willWorkOnManyPlatforms).
