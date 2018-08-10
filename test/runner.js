@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+var events = require('events');
 require('child_process').spawn = mockChild;
 
 // Mock child_process
@@ -80,9 +81,9 @@ function mockChild(command, args) {
     });
   }
   
-  var child = new process.EventEmitter;
-  child.stdout = new process.EventEmitter;
-  child.stderr = new process.EventEmitter;
+  var child = new events.EventEmitter;
+  child.stdout = new events.EventEmitter;
+  child.stderr = new events.EventEmitter;
   child.stdin  = {
     buffer : '',
     write  : function(tabs) { this.buffer = tabs; },
@@ -130,7 +131,7 @@ mockChild.tabs = {
 
 // Test helpers
 function loadTabs(user) {
-  var promise = new(process.EventEmitter);
+  var promise = new(events.EventEmitter);
   
   CronTab.load(user, function(err, tab) {
     if (err) { promise.emit('error', err); }
@@ -140,7 +141,7 @@ function loadTabs(user) {
   return promise;
 }
 function saveTabs(tab) {
-  var promise = new(process.EventEmitter);
+  var promise = new(events.EventEmitter);
   
   tab.save(function(err, tab) {
     if (err) { promise.emit('error', err); }
