@@ -673,6 +673,20 @@ var willWorkOnManyPlatforms = {
   }
 };
 
+var willFailWithError = {
+  'Failures should throw Error objects' : {
+    topic: function() {
+      mockChild.user = 'blago';
+      // since user Tom does not exist this should trigger a failure
+      return loadTabs('tom');
+    },
+    'load will fail with Error': function(err, tab) {
+      Assert.isNotNull(err);
+      Assert.isTrue(err instanceof Error);
+    }
+  }
+};
+
 var Vows    = require('vows');
 var Assert  = require('assert');
 var CronTab = require('../lib/index');
@@ -696,4 +710,5 @@ Vows.describe('crontab').
   addBatch(canSaveCreatedJobs).
   addBatch(canResetJobs).
   addBatch(willWorkOnManyPlatforms).
+  addBatch(willFailWithError).
   export(module);
