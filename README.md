@@ -3,7 +3,7 @@
 [![Dependencies](https://david-dm.org/dachev/node-crontab.png)](https://david-dm.org/dachev/node-crontab)
 [![NPM version](https://badge.fury.io/js/crontab.svg)](http://badge.fury.io/js/crontab)
 
-Allows creating, reading, updating, and deleting system cronjobs with node.js.
+A module for creating, reading, updating, and deleting system cron jobs
 
 ## Installation
 
