@@ -95,7 +95,7 @@ require('crontab').load(function(err, crontab) {
   // find env variables by name
   var vars = crontab.vars('FOO');
 
-  // create with a argument pair
+  // create with a pair of arguments
   crontab.vars().add('FOO', 'foo');
   // create multiple with an object argument
   crontab.vars().add({'FOO':'foo', 'BAR':'1'});
