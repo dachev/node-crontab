@@ -125,7 +125,10 @@ mockChild.tabs = {
              '@annually /usr/bin/env echo "starting service (annually)"',
              '@midnight /usr/bin/env echo "starting service (midnight)"'],
   comments: ['0 8-17 * * 1-5 /usr/bin/env echo "check email" #every business hour'],
-  commands: ['0 8-17 * * 1-5 /usr/bin/env echo "check email" #every business hour']
+  commands: ['0 8-17 * * 1-5 /usr/bin/env echo "check email" #every business hour'],
+  env: ['FOO=bar',
+        'BAZ=1',
+        '* * * * * /usr/bin/true']
 };
 
 
@@ -282,6 +285,101 @@ var userLoadsHerOwnNonEmptyCronsAgain = {
     }
   }
 };
+var canLoadEnvironment = {
+  'can load environment variables' : {
+    topic: function() {
+      mockChild.user = 'env';
+      return loadTabs('');
+    },
+    'should load environment variables':function(err, tab) {
+      Assert.isArray(tab.vars());
+      Assert.equal(tab.vars().length, 2);
+      Assert.equal(tab.vars('FOO').length, 1);
+      Assert.equal(tab.vars('BAZ').length, 1);
+      Assert.equal(tab.vars('FOO').val(), 'bar');
+      Assert.equal(tab.vars('BAZ').val(), '1');
+    }
+  }
+};
+var canQueryEnvironment = {
+  'can query environment variables' : {
+    topic: function() {
+      mockChild.user = 'env';
+      return loadTabs('');
+    },
+    'should succeed with a key argument':function(err, tab) {
+      Assert.isArray(tab.vars('FOO'));
+      Assert.equal(tab.vars('FOO').length, 1);
+      Assert.equal(tab.vars('FOO').val(), 'bar');
+    },
+    'should succeed with an object argument':function(err, tab) {
+      Assert.isArray(tab.vars({name:'FOO'}));
+      Assert.equal(tab.vars({name:'FOO'}).length, 1);
+      Assert.equal(tab.vars({name:'FOO'}).val(), 'bar');
+      Assert.equal(tab.vars({name:'FOO', val: 'bar'}).length, 1);
+    },
+    'should succeed with no arguments':function(err, tab) {
+      Assert.isArray(tab.vars());
+      Assert.equal(tab.vars().length, 2);
+    }
+  }
+}
+var canCreateEnvironment = {
+  'can create environment variables' : {
+    topic: function() {
+      mockChild.user = 'empty';
+
+      return loadTabs('');
+    },
+    'should succeed with a pair of arguments':function(err, tab) {
+      Assert.equal(tab.vars().length, 0);
+      tab.vars().add('FOO', 'foo');
+      tab.vars().add('BAR', '1');
+      Assert.equal(tab.vars().length, 2);
+
+      Assert.equal(tab.vars({name:'FOO'}).length, 1);
+      Assert.equal(tab.vars({name:'BAR'}).length, 1);
+
+      Assert.equal(tab.vars({name:'FOO'}).val(), 'foo');
+      Assert.equal(tab.vars({name:'BAR'}).val(), '1');
+
+      tab.vars().rm();
+    },
+    'should succeed with an object argument':function(err, tab) {
+      Assert.equal(tab.vars().length, 0);
+      tab.vars().add({'FOO':'foo', 'BAR':'1'});
+      Assert.equal(tab.vars().length, 2);
+
+      Assert.equal(tab.vars({name:'FOO'}).length, 1);
+      Assert.equal(tab.vars({name:'BAR'}).length, 1);
+
+      Assert.equal(tab.vars({name:'FOO'}).val(), 'foo');
+      Assert.equal(tab.vars({name:'BAR'}).val(), '1');
+
+      tab.vars().rm();
+    }
+  }
+}
+var canRemoveEnvironment = {
+  'can remove environment variables' : {
+    topic: function() {
+      mockChild.user = 'empty';
+
+      return loadTabs('');
+    },
+    'should succeed':function(err, tab) {
+      Assert.equal(tab.vars().length, 0);
+      tab.vars().add({'FOO':'foo', 'BAR':'1'});
+      Assert.equal(tab.vars().length, 2);
+
+      tab.vars({name: 'FOO'}).rm();
+      Assert.equal(tab.vars().length, 1);
+
+      tab.vars().rm();
+      Assert.equal(tab.vars().length, 0);
+    }
+  }
+}
 var canCreateJob = {
   'can create job': {
     topic: function() {
@@ -649,8 +747,14 @@ var canResetJobs = {
       tab.create('ls -l', '0 7 * * 1,2,3,4,5', 'test 3');
       Assert.equal(tab.jobs().length, 3);
 
+      Assert.equal(tab.vars().length, 0);
+      tab.vars().add('FOO', 'foo');
+      tab.vars().add('BAR', '1');
+      Assert.equal(tab.vars().length, 2);
+
       tab.reset();
       Assert.equal(tab.jobs().length, 0);
+      Assert.equal(tab.vars().length, 0);
     }
   }
 };
@@ -699,6 +803,10 @@ Vows.describe('crontab').
   addBatch(userLoadsHerOwnNonEmptyCrons).
   addBatch(userSavesHerOwnNonEmptyCrons).
   addBatch(userLoadsHerOwnNonEmptyCronsAgain).
+  addBatch(canLoadEnvironment).
+  addBatch(canQueryEnvironment).
+  addBatch(canCreateEnvironment).
+  addBatch(canRemoveEnvironment).
   addBatch(canCreateJob).
   addBatch(canRemoveJob).
   addBatch(canParseRawLine).

@@ -12,7 +12,7 @@ $ npm install crontab
 ```
 
 ## Examples
-### Kitchen sink
+### Working with jobs
 ```js
 require('crontab').load(function(err, crontab) {
   // create with string expression
@@ -78,6 +78,37 @@ require('crontab').load(function(err, crontab) {
   });
 
   console.log(crontab);
+});
+```
+
+### Working with environment variables
+```js
+require('crontab').load(function(err, crontab) {
+  // get all env variables
+  var vars = crontab.vars();
+  // find env variables by name
+  var vars = crontab.vars({name: 'FOO'});
+  // find env variables by value
+  var vars = crontab.vars({val: 'bar'});
+  // find env variables by name and value
+  var vars = crontab.vars({name: 'FOO', val: 'bar'});
+  // find env variables by name
+  var vars = crontab.vars('FOO');
+
+  // create with a argument pair
+  crontab.vars().add('FOO', 'foo');
+  // create multiple with an object argument
+  crontab.vars().add({'FOO':'foo', 'BAR':'1'});
+
+  // remove all env variables
+  crontab.vars().rm();
+  // remove selected env variables
+  crontab.vars({name: 'FOO'}).rm();
+
+  // save
+  crontab.save(function(err, crontab) {
+
+  });
 });
 ```
 
