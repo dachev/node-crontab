@@ -38,5 +38,6 @@
       "type": "GPL3",
       "url": "http://opensource.org/licenses/MIT"
     }
-  ]
+  ],
+  "types": "lib/index.d.ts"
 }
